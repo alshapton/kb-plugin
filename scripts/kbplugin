@@ -1,32 +1,119 @@
 #!Python
+# -*- encoding: utf-8 -*-
+# kb v0.1.5
+# A knowledge base organizer
+# Copyright © 2020, gnc.
+# See /LICENSE for licensing information.
+
+"""
+plugin connecting module
+
+:Copyright: © 2021, alshapton.
+:License: GPLv3 (see /LICENSE).
+"""
 
 import argparse
 import sys
+import toml
 from typing import Dict, Sequence
 
 __version__ = '0.0.1'
 
-# Entry point for kbplugin command to contain the connect and disconnect commands
-#
-# kbplugin connect       - connect the plugin manager to an instance of kb by copying files to kb directory
-#
-# kbplugin disconnect   - reverse the above
-# 
-# kbplugin --version
-# 
-# kbplugin --help
-#
+def construct_toml_file():
+    from pathlib import Path
+    return str(__file__ + '.toml')
+
+def write_toml_file(data:str):
+    """
+    Write the updated config back to the kbplugin.toml file.
+    Argument:
+    data    -   the updated data to write to the file.
+    """
+    path = construct_toml_file()
+    # Write the information to the main bases.toml file.
+    with open(path, 'w') as tcf:
+        tcf.write(toml.dumps(data))
+    return True
+
+def read_toml_file():
+    data = toml.load(construct_toml_file())
+    return (data)
+    
+
+def iskbinstalled():
+    try:
+        import kb.main
+        return kb.main.__file__
+    except ModuleNotFoundError:
+        return ''
 
 def connect(args: Dict[str, str]): 
-    print("connect kb-plugin")
+    data = read_toml_file()
+    isconnected=data['status']['connected']
+    if (not isconnected):
+        if (iskbinstalled() != ''):
+            print('Connecting to kb instance')
+            data['status']['connected'] = True
+            write_toml_file(data)
+        else:
+            print('Cannot connect to kb - kb is not installed')
+            sys.exit(1)
+    else:
+        print('kb-plugin is already connected to the kb instance')
+        sys.exit(1)        
+
 
 def disconnect(args: Dict[str, str]): 
-    print("disconnect kb-plugin")
+    data = read_toml_file()
+    isconnected=data['status']['connected']
+    if (isconnected):
+        if (iskbinstalled() != ''):
+            print('Disconnecting from kb instance')
+            data['status']['connected'] = False
+            write_toml_file(data)
+        else:
+            print('Cannot disconnect from kb - kb is not installed')
+            sys.exit(1)
+    else:
+        print('kb-plugin is already disconnected from the kb instance')
+        sys.exit(1)  
 
-CMDS = {
-    'connect': connect,
-    'disconnect': disconnect,
-}
+def stat(args: Dict[str, str]): 
+    from kb.printer.style import ALT_BGROUND, BOLD, UND, RESET
+
+    PREFIX = ''
+    SUFFIX = ''
+    UPREFIX = ''
+
+    try:
+        from kb import __version__ as kb_version
+        isconnected = False
+        data = read_toml_file()
+        isconnected = data['status']['connected']
+        if args['no_color']:
+            PREFIX = BOLD
+            SUFFIX = RESET
+            UPREFIX = BOLD + UND
+        
+        if (isconnected):
+            connectedtext = 'Connected'
+        else:
+            connectedtext = 'Disconnected'
+    except ModuleNotFoundError:
+        connectedtext = 'Not Installed'
+        kb_version  = connectedtext
+        pass
+    
+    line1 = UPREFIX + "kb-plugin Status Information" + SUFFIX
+    line2 = PREFIX + "kb-plugin Version  : " + __version__ + SUFFIX
+    line3 = PREFIX + "kb Version         : " + kb_version + SUFFIX
+    line4 = PREFIX + "Status             : " + connectedtext + SUFFIX
+    
+    print(line1)
+    print(line2)
+    print(line3)
+    print(line4)
+
 
 def parse_args(args: Sequence[str]) -> argparse.Namespace:
     """
@@ -42,7 +129,6 @@ def parse_args(args: Sequence[str]) -> argparse.Namespace:
     An argparse Namespace object with the provided arguments, which
     can be used in a simpler format.
     """
-    import sys
     
     parser = argparse.ArgumentParser(prog='kbplugin',
                                      description='A plugin manager for kb')
@@ -58,9 +144,19 @@ def parse_args(args: Sequence[str]) -> argparse.Namespace:
 
     _connect_parser = subparsers.add_parser(
         'connect', help='Connect kb-plugin to the kb instance')
+
     _disconnect_parser = subparsers.add_parser(
         'disconnect', help='Disconnect kb-plugin to the kb instance')   
-        
+
+    _status_parser = subparsers.add_parser(
+        'status', help='Show information about kb-plugin')   
+    _status_parser.add_argument(
+        "-n", "--no-color",
+        help="Enable no-color mode",
+        action='store_false',
+        dest='no_color',
+        default=True)               
+    
     help_parser = subparsers.add_parser(
         'help', help='Show help of a particular command') 
     help_parser.add_argument(
@@ -97,6 +193,13 @@ def dispatch(function, *args, **kwargs):
 
 
 """Main routine of kbplugin."""
+
+CMDS = {
+    'connect': connect,
+    'disconnect': disconnect,
+    'status':stat,
+}
+
 args = parse_args(sys.argv[1:])
 cmd = args.command
 cmd_params = vars(args)

@@ -1,0 +1,7 @@
+title = "kb-plugin config"
+
+[info]
+version = "0.0.1"
+
+[status]
+connected = true

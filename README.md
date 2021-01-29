@@ -5,17 +5,18 @@
 # kb-plugin - a plugin manager for kb, the minimalist knowledge base manager.
 
 
-[![Build Status](https://travis-ci.com/gnebbia/kb.svg?branch=master)](https://travis-ci.com/gnebbia/kb)
+![Main Build](https://github.com/alshapton/kb-plugin/workflows/KB-PLUGINS-BUILD/badge.svg?branch=main)
 
+![CodeQL](https://github.com/alshapton/kb-plugin/workflows/CodeQL/badge.svg)
 #### You can get support for kb [here](https://xscode.com/gnebbia/kb)
 
-Author: gnc <nebbionegiuseppe@gmail.com>˜
+Author: alshapton <alshapton@gmail.com>˜
 
 Copyright: © 2021, alshapton
 
-Date: 2020-10-16
+Date: 2021-JAN-30
 
-Version: 0.1.5
+Version: 0.0.1
 
 
 ## Table of Contents
