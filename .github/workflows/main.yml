@@ -1,4 +1,4 @@
-name: KB-PLUGINS-BUILD
+name: build
 
 # Controls when the action will run. 
 on: 
