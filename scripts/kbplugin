@@ -1,0 +1,107 @@
+#!Python
+
+import argparse
+import sys
+from typing import Dict, Sequence
+
+__version__ = '0.0.1'
+
+# Entry point for kbplugin command to contain the connect and disconnect commands
+#
+# kbplugin connect       - connect the plugin manager to an instance of kb by copying files to kb directory
+#
+# kbplugin disconnect   - reverse the above
+# 
+# kbplugin --version
+# 
+# kbplugin --help
+#
+
+def connect(args: Dict[str, str]): 
+    print("connect kb-plugin")
+
+def disconnect(args: Dict[str, str]): 
+    print("disconnect kb-plugin")
+
+CMDS = {
+    'connect': connect,
+    'disconnect': disconnect,
+}
+
+def parse_args(args: Sequence[str]) -> argparse.Namespace:
+    """
+    This function parses the arguments which have been passed from the command
+    line, these can be easily retrieved for example by using "sys.argv[1:]".
+    It returns an argparse Namespace object.
+
+    Arguments:
+    args -- the list of arguments passed from the command line as the sys.argv
+            format
+
+    Returns:
+    An argparse Namespace object with the provided arguments, which
+    can be used in a simpler format.
+    """
+    import sys
+    
+    parser = argparse.ArgumentParser(prog='kbplugin',
+                                     description='A plugin manager for kb')
+    parser.add_argument(
+        "--version",
+        action="version",
+        version="%(prog)s {}".format(__version__))
+    
+    # Main Commands
+    
+    subparsers = parser.add_subparsers(help='commands', dest="command")
+    subparsers.required = True
+
+    _connect_parser = subparsers.add_parser(
+        'connect', help='Connect kb-plugin to the kb instance')
+    _disconnect_parser = subparsers.add_parser(
+        'disconnect', help='Disconnect kb-plugin to the kb instance')   
+        
+    help_parser = subparsers.add_parser(
+        'help', help='Show help of a particular command') 
+    help_parser.add_argument(
+        'cmd',
+        help='Name of command to get help for',
+        nargs='?'
+    )
+
+    if len(args) == 0:
+        parser.print_help(sys.stderr)
+        sys.exit(1)
+    
+    parsed_args = parser.parse_args()
+    if parsed_args.command == 'help':
+        if not parsed_args.cmd:
+            parser.print_help(sys.stderr)
+        else:
+            try:
+                subparsers.choices[parsed_args.cmd].print_help()
+            except KeyError:
+                print(f'Unknown command name `{parsed_args.cmd}`')
+                print(
+                    f"Valid commands are: {', '.join(subparsers.choices.keys())}"
+                )
+        sys.exit(1)
+    return parsed_args
+
+def dispatch(function, *args, **kwargs):
+    """
+    Dispatch command line action to proper
+    kb function
+    """
+    return CMDS[function](*args, **kwargs)
+
+
+"""Main routine of kbplugin."""
+args = parse_args(sys.argv[1:])
+cmd = args.command
+cmd_params = vars(args)
+dispatch(cmd, cmd_params)
+
+
+
+    

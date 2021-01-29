@@ -36,8 +36,7 @@ def list_plugins(args: Dict[str, str], config: Dict[str, str]):
 
         root = str(Path(os.path.dirname(interim_root)))
         toml_data_file = (str(Path(root, plugin, 'config.toml')))
-        print(plugin, "     -    ", toml_data_file)
-
+        print(root)
         # Check to see if this module should be included in the list
         disabled = get_plugin_status(plugin)
         if ((list_type == 'all' ) or
