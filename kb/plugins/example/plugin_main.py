@@ -48,7 +48,7 @@ def register_plugin(parser:argparse, subparsers, config):
     # End of MANDATORY metadata parser
 
 # ==========================================#
-# YOU WILL NEEED TO EDIT THE FILE FROM HERE #
+# YOU WILL NEED TO EDIT THE FILE FROM HERE #
 # ==========================================#
 
     # ADD YOUR PARSER CODE HERE:
@@ -104,7 +104,7 @@ def register_plugin(parser:argparse, subparsers, config):
 You will need to:
  * Create Functions here for each of the commands you define
    (there are always 2 arguments - args & config)
- * Import the corresponding function to carry out the commnd from the "commands" module
+ * Import the corresponding function to carry out the command from the "commands" module
  * You will need to return a "results" object (content is user-definable)
 """ 
 
