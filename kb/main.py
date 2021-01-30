@@ -31,7 +31,6 @@ from kb.commands.search import search
 from kb.commands.template import template
 from kb.commands.update import update
 from kb.commands.view import view
-from kb.plugin import loadModules # Functionality for plugin architecture
 
 COMMANDS = {
     'add': add,
@@ -62,11 +61,19 @@ def dispatch(function, *args, **kwargs):
 def main():
     """Main routine of kb."""
 
-    loadModules('commands','','',COMMANDS) # Load any plugins that are available
-
     args = parse_args(sys.argv[1:])
     cmd = args.command
     cmd_params = vars(args)
-    
+    # KB-PLUGIN-CONN                                              #  (KPC)
+    # Start of kb-plugin connection code                          #  (KPC)
+    # Connected at : 2021-01-30 23:00:53.882984                   #  (KPC)
+    # DO NOT MODIFY THIS CONNECTION CODE                          #  (KPC)
+    try:                                                          #  (KPC)
+        from kb.plugin import loadModules                         #  (KPC)
+        loadModules('commands','','',COMMANDS,DEFAULT_CONFIG,cmd) #  (KPC)
+    except ModuleNotFoundError:                                   #  (KPC)
+        pass                                                      #  (KPC)
+    # End of kb-plugin connection code                            #  (KPC)
+    # KB-PLUGIN-CONN                                              #  (KPC)
     dispatch(cmd, cmd_params, config=DEFAULT_CONFIG)
 

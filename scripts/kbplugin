@@ -1,0 +1,280 @@
+#!Python
+# -*- encoding: utf-8 -*-
+# kb v0.1.5
+# A knowledge base organizer
+# Copyright © 2020, gnc.
+# See /LICENSE for licensing information.
+
+"""
+plugin connecting module
+
+:Copyright: © 2021, alshapton.
+:License: GPLv3 (see /LICENSE).
+"""
+
+import argparse
+import sys
+from typing import Dict, Sequence
+
+def construct_toml_file():
+    from pathlib import Path
+    return str(__file__ + '.toml')
+
+def write_toml_file(data:str):
+    """
+    Write the updated config back to the kbplugin.toml file.
+    Argument:
+    data    -   the updated data to write to the file.
+    """
+    import toml
+
+    path = construct_toml_file()
+    # Write the updated information to the .toml file.
+    with open(path, 'w') as tcf:
+        tcf.write(toml.dumps(data))
+    return True
+
+def read_toml_file():
+    import toml
+    data = toml.load(construct_toml_file())
+    return (data)
+    
+
+def iskbinstalled():
+    try:
+        import kb.main
+        return kb.main.__file__
+    except ModuleNotFoundError:
+        return ''
+
+def inject_connect_code(p: str):
+    from pathlib import Path
+    from lineinfile import ALWAYS, AfterFirst,add_line_to_file
+    import os
+    from datetime import datetime
+    
+    s = os.linesep
+    now = str(datetime.now())
+
+    line = "    # KB-PLUGIN-CONN                                              #  (KPC)" + s
+    line = line + "    # Start of kb-plugin connection code                          #  (KPC)" + s
+    line = line + "    # Connected at : " + now + "                   #  (KPC)" + s
+    line = line + "    # DO NOT MODIFY THIS CONNECTION CODE                          #  (KPC)" + s
+    line = line + "    try:                                                          #  (KPC)" + s
+    line = line + "        from kb.plugin import loadModules                         #  (KPC)" + s
+    line = line + "        loadModules('commands','','',COMMANDS,DEFAULT_CONFIG,cmd) #  (KPC)" + s
+    line = line + "    except ModuleNotFoundError:                                   #  (KPC)" + s
+    line = line + "        pass                                                      #  (KPC)" + s
+    line = line + "    # End of kb-plugin connection code                            #  (KPC)" + s 
+    line = line + "    # KB-PLUGIN-CONN                                              #  (KPC)" + s 
+
+    add_line_to_file(
+        p,
+        line,
+        inserter=AfterFirst(r"cmd_params = vars"),
+        backup=ALWAYS,
+        backup_ext=".original",
+        )
+
+
+def outject_connect_code(p: str):
+    from pathlib import Path
+    from lineinfile import ALWAYS, remove_lines_from_file
+
+    remove_lines_from_file(
+        p,
+        regexp=r"\b(KPC)\b",
+    )
+
+
+def skeleton(args:Dict[str,str]):
+    return None 
+
+
+def connect(args: Dict[str, str]): 
+    import os
+    from kb.filesystem import copy_file
+    from pathlib import Path
+    data = read_toml_file()
+    isconnected = data['status']['connected']
+    if (not isconnected):
+        installation_path = iskbinstalled()
+        if (installation_path != ''):
+            data['status']['connected'] = True
+            write_toml_file(data)
+            installation_dir = os.path.dirname(installation_path)
+            here_path = os.path.dirname(__file__)
+            copy_file(str(Path(here_path,'plugin.py')),str(Path(installation_dir,'plugin.py')))
+            inject_connect_code(installation_path)
+            print('Connected to kb instance')
+            sys.exit(0)        
+        else:
+            print('Cannot connect to kb - kb is not installed')
+            sys.exit(1)
+    else:
+        print('kb-plugin is already connected to the kb instance')
+        sys.exit(1)        
+
+
+def disconnect(args: Dict[str, str]): 
+    import os
+    from pathlib import Path
+    from kb.filesystem import remove_file
+
+    data = read_toml_file()
+    isconnected = data['status']['connected']
+    if (isconnected):
+        installation_path = iskbinstalled()
+        if (installation_path != ''):
+            data['status']['connected'] = False
+            write_toml_file(data)
+            outject_connect_code(installation_path)
+            p = os.path.dirname(installation_path)
+            remove_file(str(Path(p,'plugin.py')))
+            print('Disconnected from kb instance')
+            sys.exit(0)
+        else:
+            print('Cannot disconnect from kb - kb is not installed')
+            sys.exit(1)
+    else:
+        print('kb-plugin is already disconnected from the kb instance')
+        sys.exit(1)  
+
+def stat(args: Dict[str, str]): 
+    from kb.printer.style import ALT_BGROUND, BOLD, UND, RESET
+
+    PREFIX = ''
+    SUFFIX = ''
+    UPREFIX = ''
+
+    if iskbinstalled():
+        from kb import __version__ as kb_version
+        data = read_toml_file()
+        isconnected = data['status']['connected']
+        if args['no_color']:
+            PREFIX = BOLD
+            SUFFIX = RESET
+            UPREFIX = BOLD + UND
+        
+        if (isconnected):
+            connectedtext = 'Connected'
+        else:
+            connectedtext = 'Disconnected'
+    else:
+        connectedtext = 'Not Installed'
+        kb_version  = connectedtext
+        
+    kb_plugin_version = read_toml_file()['info']['version']
+    line1 = UPREFIX + "kb-plugin Status Information" + SUFFIX
+    line2 = PREFIX + "kb-plugin Version  : " + kb_plugin_version + SUFFIX
+    line3 = PREFIX + "kb Version         : " + kb_version + SUFFIX
+    line4 = PREFIX + "Status             : " + connectedtext + SUFFIX
+    
+    print(line1)
+    print(line2)
+    print(line3)
+    print(line4)
+
+
+def parse_args(args: Sequence[str]) -> argparse.Namespace:
+    """
+    This function parses the arguments which have been passed from the command
+    line, these can be easily retrieved for example by using "sys.argv[1:]".
+    It returns an argparse Namespace object.
+
+    Arguments:
+    args -- the list of arguments passed from the command line as the sys.argv
+            format
+
+    Returns:
+    An argparse Namespace object with the provided arguments, which
+    can be used in a simpler format.
+    """
+
+    parser = argparse.ArgumentParser(prog='kbplugin',
+                                     description='A plugin manager for kb')
+    parser.add_argument(
+        "--version",
+        action="version",
+        version="%(prog)s {}".format(read_toml_file()['info']['version']))
+    
+    # Main Commands
+    
+    subparsers = parser.add_subparsers(help='commands', dest="command")
+    subparsers.required = True
+
+    _connect_parser = subparsers.add_parser(
+        'connect', help='Connect kb-plugin to the kb instance')
+
+    _disconnect_parser = subparsers.add_parser(
+        'disconnect', help='Disconnect kb-plugin to the kb instance')   
+
+    _skeleton_parser = subparsers.add_parser(
+        'skeleton', help='Create a skeleton plugin to modify')   
+    _skeleton_parser.add_argument(
+        "name",
+        help="Name of plugin to create",
+        action='store_false',
+        )   
+
+    _status_parser = subparsers.add_parser(
+        'status', help='Show information about kb-plugin')   
+    _status_parser.add_argument(
+        "-n", "--no-color",
+        help="Enable no-color mode",
+        action='store_false',
+        dest='no_color',
+        default=True)               
+    
+    help_parser = subparsers.add_parser(
+        'help', help='Show help of a particular command') 
+    help_parser.add_argument(
+        'cmd',
+        help='Name of command to get help for',
+        nargs='?'
+    )
+
+    if len(args) == 0:
+        parser.print_help(sys.stderr)
+        sys.exit(1)
+    
+    parsed_args = parser.parse_args()
+    if parsed_args.command == 'help':
+        if not parsed_args.cmd:
+            parser.print_help(sys.stderr)
+        else:
+            try:
+                subparsers.choices[parsed_args.cmd].print_help()
+            except KeyError:
+                print(f'Unknown command name `{parsed_args.cmd}`')
+                print(
+                    f"Valid commands are: {', '.join(subparsers.choices.keys())}"
+                )
+        sys.exit(1)
+    return parsed_args
+
+def dispatch(function, *args, **kwargs):
+    """
+    Dispatch command line action to proper
+    kb function
+    """
+    return CMDS[function](*args, **kwargs)
+
+
+"""Main routine of kbplugin."""
+
+CMDS = {
+    'connect': connect,
+    'disconnect': disconnect,
+    'skeleton': skeleton,
+    'status':stat,
+}
+
+args = parse_args(sys.argv[1:])
+cmd = args.command
+cmd_params = vars(args)
+dispatch(cmd, cmd_params)
+
+
+
+    
