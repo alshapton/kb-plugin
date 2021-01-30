@@ -64,10 +64,16 @@ def main():
     args = parse_args(sys.argv[1:])
     cmd = args.command
     cmd_params = vars(args)
-    try:                                                            # Attempt to load the 
-        from kb.plugin import loadModules                           # functionality for plugin architecture
-        loadModules('commands','','',COMMANDS,DEFAULT_CONFIG,cmd)   # Load any plugins that are available
-    except ModuleNotFoundError:                                     # If the plugin mod. isn't installed, 
-        pass                                                        #  then ignore error
+    # KB-PLUGIN-CONN                                              #  (KPC)
+    # Start of kb-plugin connection code                          #  (KPC)
+    # Connected at : 2021-01-30 23:00:53.882984                   #  (KPC)
+    # DO NOT MODIFY THIS CONNECTION CODE                          #  (KPC)
+    try:                                                          #  (KPC)
+        from kb.plugin import loadModules                         #  (KPC)
+        loadModules('commands','','',COMMANDS,DEFAULT_CONFIG,cmd) #  (KPC)
+    except ModuleNotFoundError:                                   #  (KPC)
+        pass                                                      #  (KPC)
+    # End of kb-plugin connection code                            #  (KPC)
+    # KB-PLUGIN-CONN                                              #  (KPC)
     dispatch(cmd, cmd_params, config=DEFAULT_CONFIG)
 
