@@ -88,6 +88,61 @@ def outject_connect_code(p: str):
 
 
 def skeleton(args:Dict[str,str]):
+    from questionary import prompt
+    print('Create the skeleton for a new plugin')
+    print()
+    print("Enter the following:")
+    questions = [
+                {    
+                    'type':'text',
+                    'name':'name',
+                    'message':'Your Name: ',
+                    'qmark':'-'
+                },
+                {    
+                    'type':'text',
+                    'name':'email',
+                    'message':'Your Email: ',
+                    'qmark':'-'
+                },
+                {    
+                    'type':'text',
+                    'name':'plugin_name',
+                    'message':'Name of the new plugin: ',
+                    'qmark':'-'
+                },
+                    {    
+                    'type':'text',
+                    'name':'Description',
+                    'message':'Description of the plugin: ',
+                    'instruction':'Text that will appear in the help for this plugin',
+                    'qmark':'-'
+                },
+                {    
+                    'type':'text',
+                    'name':'Version',
+                    'message':'Version Number: ',
+                    'instruction':'MUST be in semver notation i.e. 0.0.1',
+                    'qmark':'-'
+                },
+                {    
+                    'type':'path',
+                    'name':'Location',
+                    'message':'Location of the plugin code (Press <TAB>): ',
+                    'only_directories':True,
+                    'qmark':'-'
+                },
+                {    
+                    'type':'text',
+                    'name':'Repo',
+                    'message':'Remote repo location: ',
+                    'qmark':'-'
+                },
+
+    ]
+       
+    answers = prompt(questions)
+    print(answers)
     return None 
 
 

@@ -17,7 +17,7 @@ from typing import Dict
 
 def register_plugin(parser:argparse, subparsers, config):
     from kb.plugin import get_plugin_info
-    
+    from kb.printer.style import BOLD, RESET 
     # DO NOT EDIT THIS PART OF THE FUNCTION
     # Get overall content for registratioon of plugin
     info = get_plugin_info(__file__)
