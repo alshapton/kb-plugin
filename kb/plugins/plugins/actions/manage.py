@@ -13,7 +13,8 @@ Plugin extension manager (manage plugins action)
 
 from typing import Dict
 
-def manage_plugins(args: Dict[str, str], config: Dict[str, str],filename): 
+
+def manage_plugins(args: Dict[str, str], config: Dict[str, str], filename):
     import os
     import sys
     from pathlib import Path
@@ -26,7 +27,7 @@ def manage_plugins(args: Dict[str, str], config: Dict[str, str],filename):
     # Get a list of modules
     mods = get_modules()
 
-    mods_intermediate_root = str(Path(os.path.dirname(filename)))    
+    mods_intermediate_root = str(Path(os.path.dirname(filename)))
     for plugin in args['name']:
 
         if plugin not in mods:
@@ -46,8 +47,8 @@ def manage_plugins(args: Dict[str, str], config: Dict[str, str],filename):
                 module_path = (str(Path(os.path.dirname(mods_intermediate_root) + os.path.sep + plugin)))
                 disabled_path = str(Path(module_path, ".disabled"))
                 Path(disabled_path).touch()
-                results.append('Plugin ' + plugin + ' has been disabled.')               
-        
+                results.append('Plugin ' + plugin + ' has been disabled.')
+
         if (args[plugin_entry] == 'enable'):
             if not disabled:
                 results.append('Plugin ' + plugin + ' is already enabled.')
@@ -58,6 +59,6 @@ def manage_plugins(args: Dict[str, str], config: Dict[str, str],filename):
                 module_path = (str(Path(os.path.dirname(mods_intermediate_root), plugin)))
                 disabled_path = str(Path(module_path, ".disabled"))
                 Path(disabled_path).unlink(missing_ok=True)
-                results.append('Plugin ' + plugin + ' has been enabled.')   
+                results.append('Plugin ' + plugin + ' has been enabled.')
 
     return results

@@ -1,4 +1,4 @@
-    # -*- encoding: utf-8 -*-
+# -*- encoding: utf-8 -*-
 # kb v0.1.5
 # A knowledge base organizer
 # Copyright © 2020, gnc.
@@ -14,17 +14,17 @@ kb plugins printed output module
 from kb.printer.style import ALT_BGROUND, BOLD, UND, RESET
 from kb.plugin import print_metadata, load_plugin_data
 
+
 def print_list(args, config, results):
     res = results['plugins']
     for plugin in res:
         toml_data_file = plugin['info']
-        X = load_plugin_data('metadata',toml_data_file)
-        print_metadata(args,X,config,plugin['status'],results['list_type'])
+        data = load_plugin_data('metadata', toml_data_file)
+        print_metadata(args, data, config, plugin['status'], results['list_type'])
     return None
+
 
 def print_managed_list(args, config, results):
     for res in results:
         print(res)
     return None
-
-

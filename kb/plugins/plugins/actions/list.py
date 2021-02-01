@@ -11,17 +11,17 @@ Plugin extension manager (list plugins action)
 :License: GPLv3 (see /LICENSE).
 """
 
-
 from typing import Dict
 
-def list_plugins(args: Dict[str, str], config: Dict[str, str]): 
+
+def list_plugins(args: Dict[str, str], config: Dict[str, str]):
     import os
     import sys
     from pathlib import Path
     from kb.plugin import metadata as print_metadata, get_modules
     from kb.plugin import get_plugin_status
 
-    list_type = str(args.get("status","all"))
+    list_type = str(args.get("status", "all"))
 
     # Get a list of installed plugins
     plugins = get_modules()
@@ -36,12 +36,11 @@ def list_plugins(args: Dict[str, str], config: Dict[str, str]):
 
         root = str(Path(os.path.dirname(interim_root)))
         toml_data_file = (str(Path(root, plugin, 'config.toml')))
-        print(root)
         # Check to see if this module should be included in the list
         disabled = get_plugin_status(plugin)
-        if ((list_type == 'all' ) or
-            (list_type == 'enabled' and not disabled ) or
-            (list_type == 'disabled' and disabled )):
-            plugin = {'info': toml_data_file, 'status':not disabled}
+        if ((list_type == 'all') or
+                (list_type == 'enabled' and not disabled) or
+                (list_type == 'disabled' and disabled)):
+            plugin = {'info': toml_data_file, 'status': not disabled}
             list_of_plugins.append(plugin)
-    return {'plugins': list_of_plugins,'list_type':list_type}
+    return {'plugins': list_of_plugins, 'list_type': list_type}

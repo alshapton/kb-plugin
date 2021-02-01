@@ -16,11 +16,24 @@ import argparse
 import sys
 from typing import Dict, Sequence
 
+
+def clear():
+    from subprocess import call
+    from sys import platform
+
+    if platform not in ('win32', 'cygwin'):
+        command = 'clear'
+    else:
+        command = 'cls'
+    call(command)
+
+
 def construct_toml_file():
     from pathlib import Path
     return str(__file__ + '.toml')
 
-def write_toml_file(data:str):
+
+def write_toml_file(data: str):
     """
     Write the updated config back to the kbplugin.toml file.
     Argument:
@@ -34,11 +47,39 @@ def write_toml_file(data:str):
         tcf.write(toml.dumps(data))
     return True
 
+
 def read_toml_file():
     import toml
     data = toml.load(construct_toml_file())
     return (data)
-    
+
+
+def isvalidemail(email: str):
+    import re
+    regex = '^[a-z]([w-]*[a-z]|[w-.]*[a-z]{2,}|[a-z])*@[a-z]([w-]*[a-z]|[w-.]*[a-z]{2,}|[a-z]){4,}?.[a-z]{2,}$'
+    # pass the regular expression
+    # and the string in search() method
+    if(re.search(regex, email)):
+        return True
+    else:
+        return False
+
+
+def isvalidurl(url: str):
+    import re
+    url_regex = re.compile(
+        r'^(?:http|ftp)s?://'                                                                   # http:// or https://
+        r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|'    # domain...
+        r'localhost|'                                                                           # localhost...
+        r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|'                                                  # ...or ipv4
+        r'\[?[A-F0-9]*:[A-F0-9:]+\]?)'                                                          # ...or ipv6
+        r'(?::\d+)?'                                                                            # optional port
+        r'(?:/?|[/?]\S+)$', re.IGNORECASE)
+    if re.match(regex, url):
+        return True
+    else:
+        return False
+
 
 def iskbinstalled():
     try:
@@ -47,12 +88,13 @@ def iskbinstalled():
     except ModuleNotFoundError:
         return ''
 
+
 def inject_connect_code(p: str):
     from pathlib import Path
-    from lineinfile import ALWAYS, AfterFirst,add_line_to_file
+    from lineinfile import ALWAYS, AfterFirst, add_line_to_file
     import os
     from datetime import datetime
-    
+
     s = os.linesep
     now = str(datetime.now())
 
@@ -65,8 +107,8 @@ def inject_connect_code(p: str):
     line = line + "        loadModules('commands','','',COMMANDS,DEFAULT_CONFIG,cmd) #  (KPC)" + s
     line = line + "    except ModuleNotFoundError:                                   #  (KPC)" + s
     line = line + "        pass                                                      #  (KPC)" + s
-    line = line + "    # End of kb-plugin connection code                            #  (KPC)" + s 
-    line = line + "    # KB-PLUGIN-CONN                                              #  (KPC)" + s 
+    line = line + "    # End of kb-plugin connection code                            #  (KPC)" + s
+    line = line + "    # KB-PLUGIN-CONN                                              #  (KPC)" + s
 
     add_line_to_file(
         p,
@@ -87,66 +129,67 @@ def outject_connect_code(p: str):
     )
 
 
-def skeleton(args:Dict[str,str]):
+def skeleton(args: Dict[str, str]):
     from questionary import prompt
+    clear()
     print('Create the skeleton for a new plugin')
     print()
     print("Enter the following:")
     questions = [
-                {    
-                    'type':'text',
-                    'name':'name',
-                    'message':'Your Name: ',
-                    'qmark':'-'
+                {
+                    'type': 'text',
+                    'name': 'name',
+                    'message': 'Your Name: ',
+                    'qmark': '-'
                 },
-                {    
-                    'type':'text',
-                    'name':'email',
-                    'message':'Your Email: ',
-                    'qmark':'-'
+                {
+                    'type': 'text',
+                    'name': 'email',
+                    'message': 'Your Email: ',
+                    'qmark': '-'
                 },
-                {    
-                    'type':'text',
-                    'name':'plugin_name',
-                    'message':'Name of the new plugin: ',
-                    'qmark':'-'
+                {
+                    'type': 'text',
+                    'name': 'plugin_name',
+                    'message': 'Name of the new plugin: ',
+                    'qmark': '-'
                 },
-                    {    
-                    'type':'text',
-                    'name':'Description',
-                    'message':'Description of the plugin: ',
-                    'instruction':'Text that will appear in the help for this plugin',
-                    'qmark':'-'
+                {
+                    'type': 'text',
+                    'name': 'Description',
+                    'message': 'Description of the plugin: ',
+                    'instruction': 'Text that will appear in the help for this plugin',
+                    'qmark': '-'
                 },
-                {    
-                    'type':'text',
-                    'name':'Version',
-                    'message':'Version Number: ',
-                    'instruction':'MUST be in semver notation i.e. 0.0.1',
-                    'qmark':'-'
+                {
+                    'type': 'text',
+                    'name': 'Version',
+                    'message': 'Version Number: ',
+                    'instruction': 'MUST be in semver notation i.e. 0.0.1',
+                    'qmark': '-'
                 },
-                {    
-                    'type':'path',
-                    'name':'Location',
-                    'message':'Location of the plugin code (Press <TAB>): ',
-                    'only_directories':True,
-                    'qmark':'-'
+                {
+                    'type': 'path',
+                    'name': 'Location',
+                    'message': 'Location of the plugin code (Press <TAB>): ',
+                    'only_directories': True,
+                    'qmark': '-'
                 },
-                {    
-                    'type':'text',
-                    'name':'Repo',
-                    'message':'Remote repo location: ',
-                    'qmark':'-'
+                {
+                    'type': 'text',
+                    'name': 'Repo',
+                    'message': 'Remote repo location: ',
+                    'qmark': '-'
                 },
 
     ]
-       
+
     answers = prompt(questions)
     print(answers)
-    return None 
+    return None
 
 
-def connect(args: Dict[str, str]): 
+def connect(args: Dict[str, str]):
     import os
     from kb.filesystem import copy_file
     from pathlib import Path
@@ -159,19 +202,19 @@ def connect(args: Dict[str, str]):
             write_toml_file(data)
             installation_dir = os.path.dirname(installation_path)
             here_path = os.path.dirname(__file__)
-            copy_file(str(Path(here_path,'plugin.py')),str(Path(installation_dir,'plugin.py')))
+            copy_file(str(Path(here_path, 'plugin.py')), str(Path(installation_dir, 'plugin.py')))
             inject_connect_code(installation_path)
             print('Connected to kb instance')
-            sys.exit(0)        
+            sys.exit(0)
         else:
             print('Cannot connect to kb - kb is not installed')
             sys.exit(1)
     else:
         print('kb-plugin is already connected to the kb instance')
-        sys.exit(1)        
+        sys.exit(1)
 
 
-def disconnect(args: Dict[str, str]): 
+def disconnect(args: Dict[str, str]):
     import os
     from pathlib import Path
     from kb.filesystem import remove_file
@@ -185,7 +228,7 @@ def disconnect(args: Dict[str, str]):
             write_toml_file(data)
             outject_connect_code(installation_path)
             p = os.path.dirname(installation_path)
-            remove_file(str(Path(p,'plugin.py')))
+            remove_file(str(Path(p, 'plugin.py')))
             print('Disconnected from kb instance')
             sys.exit(0)
         else:
@@ -193,9 +236,10 @@ def disconnect(args: Dict[str, str]):
             sys.exit(1)
     else:
         print('kb-plugin is already disconnected from the kb instance')
-        sys.exit(1)  
+        sys.exit(1)
 
-def stat(args: Dict[str, str]): 
+
+def stat(args: Dict[str, str]):
     from kb.printer.style import ALT_BGROUND, BOLD, UND, RESET
 
     PREFIX = ''
@@ -210,21 +254,21 @@ def stat(args: Dict[str, str]):
             PREFIX = BOLD
             SUFFIX = RESET
             UPREFIX = BOLD + UND
-        
+
         if (isconnected):
             connectedtext = 'Connected'
         else:
             connectedtext = 'Disconnected'
     else:
         connectedtext = 'Not Installed'
-        kb_version  = connectedtext
-        
+        kb_version = connectedtext
+
     kb_plugin_version = read_toml_file()['info']['version']
     line1 = UPREFIX + "kb-plugin Status Information" + SUFFIX
     line2 = PREFIX + "kb-plugin Version  : " + kb_plugin_version + SUFFIX
     line3 = PREFIX + "kb Version         : " + kb_version + SUFFIX
     line4 = PREFIX + "Status             : " + connectedtext + SUFFIX
-    
+
     print(line1)
     print(line2)
     print(line3)
@@ -252,9 +296,9 @@ def parse_args(args: Sequence[str]) -> argparse.Namespace:
         "--version",
         action="version",
         version="%(prog)s {}".format(read_toml_file()['info']['version']))
-    
+
     # Main Commands
-    
+
     subparsers = parser.add_subparsers(help='commands', dest="command")
     subparsers.required = True
 
@@ -262,27 +306,27 @@ def parse_args(args: Sequence[str]) -> argparse.Namespace:
         'connect', help='Connect kb-plugin to the kb instance')
 
     _disconnect_parser = subparsers.add_parser(
-        'disconnect', help='Disconnect kb-plugin to the kb instance')   
+        'disconnect', help='Disconnect kb-plugin to the kb instance')
 
     _skeleton_parser = subparsers.add_parser(
-        'skeleton', help='Create a skeleton plugin to modify')   
+        'skeleton', help='Create a skeleton plugin to modify')
     _skeleton_parser.add_argument(
         "name",
         help="Name of plugin to create",
         action='store_false',
-        )   
+        )
 
     _status_parser = subparsers.add_parser(
-        'status', help='Show information about kb-plugin')   
+        'status', help='Show information about kb-plugin')
     _status_parser.add_argument(
         "-n", "--no-color",
         help="Enable no-color mode",
         action='store_false',
         dest='no_color',
-        default=True)               
-    
+        default=True)
+
     help_parser = subparsers.add_parser(
-        'help', help='Show help of a particular command') 
+        'help', help='Show help of a particular command')
     help_parser.add_argument(
         'cmd',
         help='Name of command to get help for',
@@ -292,7 +336,7 @@ def parse_args(args: Sequence[str]) -> argparse.Namespace:
     if len(args) == 0:
         parser.print_help(sys.stderr)
         sys.exit(1)
-    
+
     parsed_args = parser.parse_args()
     if parsed_args.command == 'help':
         if not parsed_args.cmd:
@@ -308,6 +352,7 @@ def parse_args(args: Sequence[str]) -> argparse.Namespace:
         sys.exit(1)
     return parsed_args
 
+
 def dispatch(function, *args, **kwargs):
     """
     Dispatch command line action to proper
@@ -322,14 +367,10 @@ CMDS = {
     'connect': connect,
     'disconnect': disconnect,
     'skeleton': skeleton,
-    'status':stat,
+    'status': stat,
 }
 
 args = parse_args(sys.argv[1:])
 cmd = args.command
 cmd_params = vars(args)
 dispatch(cmd, cmd_params)
-
-
-
-    
