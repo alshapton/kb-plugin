@@ -197,36 +197,25 @@ def skeleton(args: Dict[str, str]):
     print()
     print("Enter the following:")
     questions = [
-                {
-                    'type': 'text',
-                    'name': 'name',
-                    'message': 'Your Name: ',
-                    'qmark': '-',
-                    'validate': lambda text: True if len(text) > 0 else "Please enter your name"
+                { 'type': 'text', 'name': 'name', 'message': 'Your Name: ', 'qmark': '-',
+                  'validate': lambda text: True if len(text) > 0 else "Please enter your name"
+                },
+                { 'type': 'text', 'name': 'email', 'message': 'Your Email: ', 'qmark': '-',
+                  'validate': emailValidator
+                },
+                { 'type': 'text',  'name': 'plugin_name', 'message': 'Name of the new plugin: ', 'qmark': '-',
+                 'validate': pluginNameValidator
+                },
+                { 'type': 'text', 'name': 'description', 
+                  'instruction': 'Text that will appear in the help for this plugin', 'qmark': '-',
+                  'validate': lambda text: True if len(text) > 20 else "Please enter more than 20 characters"
                 },
                 {
                     'type': 'text',
-                    'name': 'email',
-                    'message': 'Your Email: ',
+                    'name': 'detail',
+                    'message': 'Further detail for help : ',
                     'qmark': '-',
-                    'validate': emailValidator
-                },
-                {
-                    'type': 'text',
-                    'name': 'plugin_name',
-                    'message': 'Name of the new plugin: ',
-                    'qmark': '-',
-                    'validate': pluginNameValidator
-                },
-                {
-                    'type': 'text',
-                    'name': 'description',
-                    'message': 'Description of the plugin: ',
-                    'instruction': 'Text that will appear in the help for this plugin',
-                    'qmark': '-',
-                    'validate': lambda text: True if len(text) > 20 else "Please enter more than 20 characters"
-
-                },
+                },                
                 {
                     'type': 'text',
                     'name': 'version',
@@ -250,12 +239,80 @@ def skeleton(args: Dict[str, str]):
                     'qmark': '-',
                     'validate': urlValidator
                 },
-
     ]
 
-    answers = prompt(questions)
-    answers['guid'] = str(uuid.uuid4())
-    print(answers)
+    #main_information = prompt(questions)
+    #main_information['guid'] = str(uuid.uuid4())
+    #print(main_information)
+
+
+    command_name = {'type': 'text', 'name': 'cmd', 'message': 'Enter the command: ', 'qmark': '-',}
+    another_command = {'type': 'confirm', 'name': 'another', 'message': 'Another command ?','qmark': '-',}
+
+    another_argument = {'type': 'confirm', 'name': 'another', 'message': 'Another argument ?','qmark': '-',}
+
+    list_of_commands = []
+
+    more_commands = {'another': True}
+    while more_commands['another']:
+        complete_parser_info = []
+        prsr_info = prompt(command_name)   
+        command_questions = [
+                    {
+                        'type': 'text',
+                        'name': 'help',
+                        'message': 'Enter the help for the ' + prsr_info["cmd"] + ' command: ',
+                        'qmark': '-',
+                    },
+        ]
+        prsr_help = prompt(command_questions)   
+        prsr_info["detail"] = prsr_help
+        complete_parser_info.append(prsr_info)
+        list_of_commands.append(complete_parser_info)
+
+        # Get arguments
+        more_args = {'another': True}
+        while more_args['another']:
+            complete_args_info = []
+            arg_questions = [
+                        {'type': 'text', 'name': 'argument', 'message': 'Option name(s): ', 'qmark': '-',},
+                        {'type': 'select', 'name': 'action', 'message': 'Action to be taken: ', 'qmark': '-',
+                            'choices': ['store', 'store_const', 'store_true', 'store_false', 'append', 'append_const',
+                            'count', 'help', 'version', 'extend', 'Custom Action'],},
+                        {'type': 'text', 'name': 'const', 'message': 'Constant to be stored: ', 'qmark': '   -',
+                            "when": lambda x: x["action"] in ["store_const", "append_const"]},
+                        {'type': 'text', 'name': 'customaction', 'message': 'Custom Action name: ', 'qmark': '   -',
+                            "when": lambda x: x["action"] == "Custom Action",},
+                        {'type': 'select', 'name': 'nargs', 'message': 'Number of arguments: ', 'qmark': '-',
+                            'choices': ['?', '*', '+', '1', '2', '3', '4', '5', '6', '7', '8', '9', '>9'],},     
+                        {'type': 'text', 'name': 'default', 'message': 'Default value: ', 'qmark': '-',},
+                        {'type': 'select', 'name': 'type', 'message': 'Type: ', 'qmark': '-',
+                            'choices': ['str', 'int', 'float', 'ascii', 'ord', 'open', 'User Defined'],},  
+                        {'type': 'text', 'name': 'userdefinedtype', 'message': 'User Defined type: ', 'qmark': '   -',
+                            "when": lambda x: x["type"] == "User Defined",}, 
+                        {'type': 'text', 'name': 'choices', 'message': 'List of choices: ', 'qmark': '-',},
+                        {'type': 'select', 'name': 'required', 'message': 'Required: ', 'qmark': '-',
+                            'choices': ['Yes', 'No'],},  
+                        {'type': 'select', 'name': 'arghelp', 'message': 'Help ? ', 'qmark': '-',
+                            'choices': ['Yes', 'No'],},  
+                        {'type': 'text', 'name': 'helpmessage', 'message': 'Help Message: ', 'qmark': '   -',
+                            "when": lambda x: x["arghelp"] == "Yes",}, 
+                        {'type': 'text', 'name': 'metavar', 'message': 'Metavar? ', 'qmark': '-',},
+                        {'type': 'text', 'name': 'dest', 'message': 'Dest? ', 'qmark': '-',},   
+            ]
+            arg = prompt(arg_questions)
+            print(arg)
+            more_args = prompt(another_argument)
+            print(more_args)
+        
+        prsr_info["detail"] = prsr_help
+        complete_parser_info.append(prsr_info)
+        list_of_commands.append(complete_parser_info)
+        more_commands = prompt(another_command)        
+        
+    print(list_of_commands)
+
+
     return None
 
 
