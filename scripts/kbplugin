@@ -19,23 +19,23 @@ from questionary import Validator, ValidationError
 
 
 class pluginNameValidator(Validator):
-    def validate(self,plugin_name):
+    def validate(self, plugin_name):
         import re
         if (len(plugin_name.text) <= 10 and len(plugin_name.text) >= 4):
             pass
         else:
-           raise ValidationError(
+            raise ValidationError(
                 message="Please enter a plugin name between 4 and 10 characters/digits",
                 cursor_position=len(plugin_name.text),
-            )  
+            )
         regex = re.compile(r"^[a-z0-9]*$")
-        if re.match(regex,plugin_name.text):
+        if re.match(regex, plugin_name.text):
             pass
         else:
             raise ValidationError(
                 message="Please enter a plugin name containing lowercase letters and digits",
                 cursor_position=len(plugin_name.text),
-            )            
+            )
 
 
 class semverValidator(Validator):
@@ -45,7 +45,7 @@ class semverValidator(Validator):
             raise ValidationError(
                 message="Please enter an valid semver-compliant version string",
                 cursor_position=len(version.text),
-            )        
+            )
         else:
             regex = re.compile(r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$")
             if (re.match(regex, version.text)):
@@ -57,14 +57,14 @@ class semverValidator(Validator):
                 )
 
 
-class emailValidator(Validator):    
+class emailValidator(Validator):
     def validate(self, email):
         import re
         if len(email.text) == 0:
             raise ValidationError(
                 message="Please enter an email address",
                 cursor_position=len(email.text),
-            )        
+            )
         else:
             regex = re.compile(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)")
             if (re.match(regex, email.text)):
@@ -77,25 +77,25 @@ class emailValidator(Validator):
 
 
 class urlValidator(Validator):
-    def validate(self,repo):
+    def validate(self, repo):
         import re
         if len(repo.text) == 0:
             raise ValidationError(
                 message="Please enter an url",
                 cursor_position=len(repo.text),
             )
-        else:  
+        else:
             regex = re.compile(
-            r'^(?:http|ftp)s?://'                                                                   # http:// or https://
-            r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|'    # domain...
-            r'localhost|'                                                                           # localhost...
-            r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|'                                                  # ...or ipv4
-            r'\[?[A-F0-9]*:[A-F0-9:]+\]?)'                                                          # ...or ipv6
-            r'(?::\d+)?'                                                                            # optional port
-            r'(?:/?|[/?]\S+)$', re.IGNORECASE)
+             r'^(?:http|ftp)s?://'                                                                   # http:// or https://
+             r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|'    # domain...
+             r'localhost|'                                                                           # localhost...
+             r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|'                                                  # ...or ipv4
+             r'\[?[A-F0-9]*:[A-F0-9:]+\]?)'                                                          # ...or ipv6
+             r'(?::\d+)?'                                                                            # optional port
+             r'(?:/?|[/?]\S+)$', re.IGNORECASE)
         if re.match(regex, repo.text):
             pass
-        else:   
+        else:
             raise ValidationError(
                 message="Please enter a valid url format",
                 cursor_position=len(repo.text),
@@ -138,7 +138,7 @@ def read_toml_file():
     return (data)
 
 
-def write_file(data: str,path: str, mode: str):
+def write_file(data: str, path: str, mode: str):
     """
     Write data to a file.
     Argument:
@@ -208,41 +208,39 @@ def skeleton(args: Dict[str, str]):
     from pathlib import Path
     import uuid
 
-    target_toml_file = str(Path(os.path.dirname(__file__),'config.tmp.toml'))
+    target_toml_file = str(Path(os.path.dirname(__file__), 'config.tmp.toml'))
     os.chdir(Path.home())
     clear()
     print('Create the skeleton for a new plugin')
     print()
     print("Enter the following:")
     questions = [
-                { 'type': 'text', 'name': 'author', 'message': 'Your Name: ', 'qmark': '-',
-                  #'validate': lambda text: True if len(text) > 0 else "Your name"
-                },
-                { 'type': 'text', 'name': 'version', 'message': 'Version Number: ',
-                  'instruction': 'MUST be in semver notation i.e. 0.0.1', 'qmark': '-', 
-                  #'validate': semverValidator
-                },
-                { 'type': 'text', 'name': 'contact', 'message': 'Your Email: ', 'qmark': '-',
-                #  'validate': emailValidator
-                },  
-                { 'type': 'text',  'name': 'plugin_name', 'message': 'The name of the new plugin: ', 'qmark': '-',
-                # 'validate': pluginNameValidator
-                },
-                { 'type': 'text', 'name': 'help', 'message': 'Description of the plugin: ',
-                  'instruction': 'Text that will appear in the help for this plugin', 'qmark': '-',
-                #  'validate': lambda text: True if len(text) > 20 else "Please enter more than 20 characters"
-                },
-                { 
-                  'type': 'text', 'name': 'detail', 'message': 'Further detail for help : ', 'qmark': '-', 
-                },
-                { 'type': 'path', 'name': 'location', 'message': 'Location of the plugin code (Press <TAB>): ',
-                    'qmark': '-', 'only_directories': True,
-                #    'validate': lambda a: True if a[1] != '.' else "You should select a directory which is not hidden"
-                },
-                { 'type': 'text', 'name': 'source', 'message': 'Remote repo. location: ', 
-                  'qmark': '-', 
-                  #'validate': urlValidator
-                },
+                {'type': 'text', 'name': 'author', 'message': 'Your Name: ', 'qmark': '-',
+                 # 'validate': lambda text: True if len(text) > 0 else "Your name"
+                 },
+                {'type': 'text', 'name': 'version', 'message': 'Version Number: ',
+                 'instruction': 'MUST be in semver notation i.e. 0.0.1', 'qmark': '-',
+                 # 'validate': semverValidator
+                 },
+                {'type': 'text', 'name': 'contact', 'message': 'Your Email: ', 'qmark': '-',
+                 # 'validate': emailValidator
+                 },
+                {'type': 'text',  'name': 'plugin_name', 'message': 'The name of the new plugin: ', 'qmark': '-',
+                 # 'validate': pluginNameValidator
+                 },
+                {'type': 'text', 'name': 'help', 'message': 'Description of the plugin: ',
+                 'instruction': 'Text that will appear in the help for this plugin', 'qmark': '-',
+                 # 'validate': lambda text: True if len(text) > 20 else "Please enter more than 20 characters"
+                 },
+                {'type': 'text', 'name': 'detail', 'message': 'Further detail for help : ', 'qmark': '-', },
+                {'type': 'path', 'name': 'location', 'message': 'Location of the plugin code (Press <TAB>): ',
+                 'qmark': '-', 'only_directories': True,
+                 # 'validate': lambda a: True if a[1] != '.' else "You should select a directory which is not hidden"
+                 },
+                {'type': 'text', 'name': 'source', 'message': 'Remote repo. location: ',
+                 'qmark': '-',
+                 # 'validate': urlValidator,
+                 },
     ]
 
     config = prompt(questions)
@@ -253,7 +251,7 @@ def skeleton(args: Dict[str, str]):
         from kb import __version__ as kb_version
     else:
         kb_version = '?.?.?'
-    
+
     title = '# -*- encoding: utf-8 -*-\n'
     title = title + '# kb v' + kb_version + '\n'
     title = title + '# A knowledge base organizer\n'
@@ -272,59 +270,55 @@ def skeleton(args: Dict[str, str]):
 
     toml_config = {
                     'config':
-                    {  
-                    'name': config['plugin_name'],
-                    'version': config['version'],
-                    'guid': str(uuid.uuid4()),
-                    'help': config['help'],
+                    {
+                     'name': config['plugin_name'],
+                     'version': config['version'],
+                     'guid': str(uuid.uuid4()),
+                     'help': config['help'],
                      }
                 }
 
-    write_toml_file(toml_config, target_toml_file,'a')
+    write_toml_file(toml_config, target_toml_file, 'a')
 
-    write_file('\n',target_toml_file, 'a')
+    write_file('\n', target_toml_file, 'a')
     toml_metadata = {
                     'metadata':
                     {
-                    'source': config['source'],
-                    'author': config['author'],
-                    'contact': config['contact'],
+                     'source': config['source'],
+                     'author': config['author'],
+                     'contact': config['contact'],
                      }
-                }    
+                }
     write_toml_file(toml_metadata, target_toml_file, 'a')
 
-   
-
-    command_name = {'type': 'text', 'name': 'command', 'message': 'Enter the command: ', 'qmark': '-',}
-    another_command = {'type': 'confirm', 'name': 'another', 'message': 'Another command ?','qmark': '-',}
-
-    another_argument = {'type': 'confirm', 'name': 'another', 'message': 'Another argument ?','qmark': '-',}
-
+    command_name = {'type': 'text', 'name': 'command', 'message': 'Enter the command: ', 'qmark': '-', }
+    another_command = {'type': 'confirm', 'name': 'another', 'message': 'Another command ?', 'qmark': '-', }
+    another_argument = {'type': 'confirm', 'name': 'another', 'message': 'Another argument ?', 'qmark': '-', }
 
     parser_config = {
                     'parser':
                     {
-                    'prefix': config['plugin_name'],
-                    'entry': config['plugin_name'] + '_command',
-                    'help': config['help'],
-                    'detail': config['detail'],
+                     'prefix': config['plugin_name'],
+                     'entry': config['plugin_name'] + '_command',
+                     'help': config['help'],
+                     'detail': config['detail'],
                      }
-                } 
+                }
 
-    write_file('\n',target_toml_file, 'a')
+    write_file('\n', target_toml_file, 'a')
     write_toml_file(parser_config, target_toml_file, 'a')
 
     more_commands = {'another': True}
     while more_commands['another']:
-        prsr_info = prompt(command_name)   
-        command_questions = { 'type': 'text', 'name': 'help',
-                              'message': 'Help for the ' + prsr_info["command"] + ' command: ', 'qmark': '-',
-                            }
-        prsr_help = prompt(command_questions)   
-        command_function = { 'type': 'text', 'name': 'function',
-                              'message': 'Function for the ' + prsr_info["command"] + ' command: ', 'qmark': '-',
-                            }
-        prsr_function = prompt(command_function)   
+        prsr_info = prompt(command_name)
+
+        command_questions = {'type': 'text', 'name': 'help',
+                             'message': 'Help for the ' + prsr_info["command"] + ' command: ', 'qmark': '-', }
+        prsr_help = prompt(command_questions)
+
+        command_function = {'type': 'text', 'name': 'function',
+                            'message': 'Function for the ' + prsr_info["command"] + ' command: ', 'qmark': '-', }
+        prsr_function = prompt(command_function)
 
         commands_config = {
                             'command': prsr_info["command"],
@@ -332,14 +326,14 @@ def skeleton(args: Dict[str, str]):
                             'help': prsr_help['help'],
                             }
         print(commands_config)
-        write_file('\n[[commands]]\n',target_toml_file, 'a')
+        write_file('\n[[commands]]\n', target_toml_file, 'a')
         write_toml_file(commands_config, target_toml_file, 'a')
 
         exit
 
         complete_args_info = []
         """
-        
+
         # Get arguments
         more_args = {'another': True}
         while more_args['another']:
@@ -354,33 +348,30 @@ def skeleton(args: Dict[str, str]):
                         {'type': 'text', 'name': 'customaction', 'message': 'Custom Action name: ', 'qmark': '   -',
                             "when": lambda x: x["action"] == "Custom Action",},
                         {'type': 'select', 'name': 'nargs', 'message': 'Number of arguments: ', 'qmark': '-',
-                            'choices': ['?', '*', '+', '1', '2', '3', '4', '5', '6', '7', '8', '9', '>9'],},     
+                            'choices': ['?', '*', '+', '1', '2', '3', '4', '5', '6', '7', '8', '9', '>9'],},
                         {'type': 'text', 'name': 'default', 'message': 'Default value: ', 'qmark': '-',},
                         {'type': 'select', 'name': 'type', 'message': 'Type: ', 'qmark': '-',
-                            'choices': ['str', 'int', 'float', 'ascii', 'ord', 'open', 'User Defined'],},  
+                            'choices': ['str', 'int', 'float', 'ascii', 'ord', 'open', 'User Defined'],},
                         {'type': 'text', 'name': 'userdefinedtype', 'message': 'User Defined type: ', 'qmark': '   -',
-                            "when": lambda x: x["type"] == "User Defined",}, 
+                            "when": lambda x: x["type"] == "User Defined",},
                         {'type': 'text', 'name': 'choices', 'message': 'List of choices: ', 'qmark': '-',},
                         {'type': 'select', 'name': 'required', 'message': 'Required: ', 'qmark': '-',
-                            'choices': ['Yes', 'No'],},  
+                            'choices': ['Yes', 'No'],},
                         {'type': 'select', 'name': 'arghelp', 'message': 'Help ? ', 'qmark': '-',
-                            'choices': ['Yes', 'No'],},  
+                            'choices': ['Yes', 'No'],},
                         {'type': 'text', 'name': 'helpmessage', 'message': 'Help Message: ', 'qmark': '   -',
-                            "when": lambda x: x["arghelp"] == "Yes",}, 
+                            "when": lambda x: x["arghelp"] == "Yes",},
                         {'type': 'text', 'name': 'metavar', 'message': 'Metavar? ', 'qmark': '-',},
-                        {'type': 'text', 'name': 'dest', 'message': 'Dest? ', 'qmark': '-',},   
+                        {'type': 'text', 'name': 'dest', 'message': 'Dest? ', 'qmark': '-',},
                         ]
             this_arg_info = prompt(arg_questions)
             print(this_arg_info)
             more_args = prompt(another_argument)
             complete_args_info.append(this_arg_info)
         """
-        #complete_parser_info.append(complete_args_info)
+        # complete_parser_info.append(complete_args_info)
 
-        more_commands = prompt(another_command)        
-
-
-
+        more_commands = prompt(another_command)
 
     return None
 
@@ -395,7 +386,7 @@ def connect(args: Dict[str, str]):
         installation_path = iskbinstalled()
         if (installation_path != ''):
             data['status']['connected'] = True
-            write_toml_file(data,construct_toml_file(), 'w')
+            write_toml_file(data, construct_toml_file(), 'w')
             installation_dir = os.path.dirname(installation_path)
             here_path = os.path.dirname(__file__)
             copy_file(str(Path(here_path, 'plugin.py')), str(Path(installation_dir, 'plugin.py')))
@@ -421,7 +412,7 @@ def disconnect(args: Dict[str, str]):
         installation_path = iskbinstalled()
         if (installation_path != ''):
             data['status']['connected'] = False
-            write_toml_file(data,construct_toml_file(), 'w')
+            write_toml_file(data, construct_toml_file(), 'w')
             outject_connect_code(installation_path)
             p = os.path.dirname(installation_path)
             remove_file(str(Path(p, 'plugin.py')))
