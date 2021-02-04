@@ -56,6 +56,7 @@ class semverValidator(Validator):
                     cursor_position=len(version.text),
                 )
 
+
 class emailValidator(Validator):    
     def validate(self, email):
         import re
@@ -100,6 +101,7 @@ class urlValidator(Validator):
                 cursor_position=len(repo.text),
             )
 
+
 def clear():
     from subprocess import call
     from sys import platform
@@ -109,6 +111,7 @@ def clear():
     else:
         command = 'cls'
     call(command)
+    return None
 
 
 def construct_toml_file():
@@ -116,17 +119,15 @@ def construct_toml_file():
     return str(__file__ + '.toml')
 
 
-def write_toml_file(data: str):
+def write_toml_file(data: str, path: str, mode: str):
     """
-    Write the updated config back to the kbplugin.toml file.
+    Write the config to the kbplugin.toml file.
     Argument:
-    data    -   the updated data to write to the file.
+    data    -   the data to write to the file.
     """
     import toml
-
-    path = construct_toml_file()
-    # Write the updated information to the .toml file.
-    with open(path, 'w') as tcf:
+    # Write information to the .toml file.
+    with open(path, mode) as tcf:
         tcf.write(toml.dumps(data))
     return True
 
@@ -137,6 +138,18 @@ def read_toml_file():
     return (data)
 
 
+def write_file(data: str,path: str, mode: str):
+    """
+    Write data to a file.
+    Argument:
+    data    -   the data to write to a file.
+    """
+    f = open(path, mode)
+    f.write(data)
+    f.close()
+    return True
+
+
 def iskbinstalled():
     try:
         import kb.main
@@ -145,14 +158,18 @@ def iskbinstalled():
         return ''
 
 
+def getnow():
+    from datetime import datetime
+    return str(datetime.now())
+
+
 def inject_connect_code(p: str):
     from pathlib import Path
     from lineinfile import ALWAYS, AfterFirst, add_line_to_file
     import os
-    from datetime import datetime
 
     s = os.linesep
-    now = str(datetime.now())
+    now = getnow()
 
     line = "    # KB-PLUGIN-CONN                                              #  (KPC)" + s
     line = line + "    # Start of kb-plugin connection code                          #  (KPC)" + s
@@ -191,89 +208,142 @@ def skeleton(args: Dict[str, str]):
     from pathlib import Path
     import uuid
 
+    target_toml_file = str(Path(os.path.dirname(__file__),'config.tmp.toml'))
     os.chdir(Path.home())
     clear()
     print('Create the skeleton for a new plugin')
     print()
     print("Enter the following:")
     questions = [
-                { 'type': 'text', 'name': 'name', 'message': 'Your Name: ', 'qmark': '-',
-                  'validate': lambda text: True if len(text) > 0 else "Please enter your name"
+                { 'type': 'text', 'name': 'author', 'message': 'Your Name: ', 'qmark': '-',
+                  #'validate': lambda text: True if len(text) > 0 else "Your name"
                 },
-                { 'type': 'text', 'name': 'email', 'message': 'Your Email: ', 'qmark': '-',
-                  'validate': emailValidator
+                { 'type': 'text', 'name': 'version', 'message': 'Version Number: ',
+                  'instruction': 'MUST be in semver notation i.e. 0.0.1', 'qmark': '-', 
+                  #'validate': semverValidator
                 },
-                { 'type': 'text',  'name': 'plugin_name', 'message': 'Name of the new plugin: ', 'qmark': '-',
-                 'validate': pluginNameValidator
+                { 'type': 'text', 'name': 'contact', 'message': 'Your Email: ', 'qmark': '-',
+                #  'validate': emailValidator
+                },  
+                { 'type': 'text',  'name': 'plugin_name', 'message': 'The name of the new plugin: ', 'qmark': '-',
+                # 'validate': pluginNameValidator
                 },
-                { 'type': 'text', 'name': 'description', 
+                { 'type': 'text', 'name': 'help', 'message': 'Description of the plugin: ',
                   'instruction': 'Text that will appear in the help for this plugin', 'qmark': '-',
-                  'validate': lambda text: True if len(text) > 20 else "Please enter more than 20 characters"
+                #  'validate': lambda text: True if len(text) > 20 else "Please enter more than 20 characters"
                 },
-                {
-                    'type': 'text',
-                    'name': 'detail',
-                    'message': 'Further detail for help : ',
-                    'qmark': '-',
-                },                
-                {
-                    'type': 'text',
-                    'name': 'version',
-                    'message': 'Version Number: ',
-                    'instruction': 'MUST be in semver notation i.e. 0.0.1',
-                    'qmark': '-',
-                    'validate': semverValidator
+                { 
+                  'type': 'text', 'name': 'detail', 'message': 'Further detail for help : ', 'qmark': '-', 
                 },
-                {
-                    'type': 'path',
-                    'name': 'location',
-                    'message': 'Location of the plugin code (Press <TAB>): ',
-                    'qmark': '-',
-                    'only_directories': True,
-                    'validate': lambda a: (True if a[0] != '.' else "You should select a directory which is not hidden")
+                { 'type': 'path', 'name': 'location', 'message': 'Location of the plugin code (Press <TAB>): ',
+                    'qmark': '-', 'only_directories': True,
+                #    'validate': lambda a: True if a[1] != '.' else "You should select a directory which is not hidden"
                 },
-                {
-                    'type': 'text',
-                    'name': 'repo',
-                    'message': 'Remote repo location: ',
-                    'qmark': '-',
-                    'validate': urlValidator
+                { 'type': 'text', 'name': 'source', 'message': 'Remote repo. location: ', 
+                  'qmark': '-', 
+                  #'validate': urlValidator
                 },
     ]
 
-    #main_information = prompt(questions)
-    #main_information['guid'] = str(uuid.uuid4())
-    #print(main_information)
+    config = prompt(questions)
+    write_file('', target_toml_file, 'w')
 
+    now = getnow()
+    if iskbinstalled():
+        from kb import __version__ as kb_version
+    else:
+        kb_version = '?.?.?'
+    
+    title = '# -*- encoding: utf-8 -*-\n'
+    title = title + '# kb v' + kb_version + '\n'
+    title = title + '# A knowledge base organizer\n'
+    title = title + '# Copyright © 2020, gnc.\n'
+    title = title + '# See /LICENSE for licensing information.\n\n'
 
-    command_name = {'type': 'text', 'name': 'cmd', 'message': 'Enter the command: ', 'qmark': '-',}
+    title = title + '#\n'
+    title = title + '# Plugin extension plugin configuration file.\n'
+    title = title + '#\n'
+    title = title + '# :Copyright: © ' + now[0:4] + ', ' + config['plugin_name'] + '\n'
+    title = title + '# :License: GPLv3 (see /LICENSE).\n'
+    title = title + '#\n\n'
+    title = title + 'title = "Config file for ' + config['plugin_name'] + ' generated by kbplugin on ' + now[0:19] + '"'
+
+    write_file(title + '\n\n', target_toml_file, 'a')
+
+    toml_config = {
+                    'config':
+                    {  
+                    'name': config['plugin_name'],
+                    'version': config['version'],
+                    'guid': str(uuid.uuid4()),
+                    'help': config['help'],
+                     }
+                }
+
+    write_toml_file(toml_config, target_toml_file,'a')
+
+    write_file('\n',target_toml_file, 'a')
+    toml_metadata = {
+                    'metadata':
+                    {
+                    'source': config['source'],
+                    'author': config['author'],
+                    'contact': config['contact'],
+                     }
+                }    
+    write_toml_file(toml_metadata, target_toml_file, 'a')
+
+   
+
+    command_name = {'type': 'text', 'name': 'command', 'message': 'Enter the command: ', 'qmark': '-',}
     another_command = {'type': 'confirm', 'name': 'another', 'message': 'Another command ?','qmark': '-',}
 
     another_argument = {'type': 'confirm', 'name': 'another', 'message': 'Another argument ?','qmark': '-',}
 
-    list_of_commands = []
+
+    parser_config = {
+                    'parser':
+                    {
+                    'prefix': config['plugin_name'],
+                    'entry': config['plugin_name'] + '_command',
+                    'help': config['help'],
+                    'detail': config['detail'],
+                     }
+                } 
+
+    write_file('\n',target_toml_file, 'a')
+    write_toml_file(parser_config, target_toml_file, 'a')
 
     more_commands = {'another': True}
     while more_commands['another']:
-        complete_parser_info = []
         prsr_info = prompt(command_name)   
-        command_questions = [
-                    {
-                        'type': 'text',
-                        'name': 'help',
-                        'message': 'Enter the help for the ' + prsr_info["cmd"] + ' command: ',
-                        'qmark': '-',
-                    },
-        ]
+        command_questions = { 'type': 'text', 'name': 'help',
+                              'message': 'Help for the ' + prsr_info["command"] + ' command: ', 'qmark': '-',
+                            }
         prsr_help = prompt(command_questions)   
-        prsr_info["detail"] = prsr_help
-        complete_parser_info.append(prsr_info)
-        list_of_commands.append(complete_parser_info)
+        command_function = { 'type': 'text', 'name': 'function',
+                              'message': 'Function for the ' + prsr_info["command"] + ' command: ', 'qmark': '-',
+                            }
+        prsr_function = prompt(command_function)   
 
+        commands_config = {
+                            'command': prsr_info["command"],
+                            'function': prsr_function['function'],
+                            'help': prsr_help['help'],
+                            }
+        print(commands_config)
+        write_file('\n[[commands]]\n',target_toml_file, 'a')
+        write_toml_file(commands_config, target_toml_file, 'a')
+
+        exit
+
+        complete_args_info = []
+        """
+        
         # Get arguments
         more_args = {'another': True}
         while more_args['another']:
-            complete_args_info = []
+            this_arg_info = []
             arg_questions = [
                         {'type': 'text', 'name': 'argument', 'message': 'Option name(s): ', 'qmark': '-',},
                         {'type': 'select', 'name': 'action', 'message': 'Action to be taken: ', 'qmark': '-',
@@ -299,18 +369,17 @@ def skeleton(args: Dict[str, str]):
                             "when": lambda x: x["arghelp"] == "Yes",}, 
                         {'type': 'text', 'name': 'metavar', 'message': 'Metavar? ', 'qmark': '-',},
                         {'type': 'text', 'name': 'dest', 'message': 'Dest? ', 'qmark': '-',},   
-            ]
-            arg = prompt(arg_questions)
-            print(arg)
+                        ]
+            this_arg_info = prompt(arg_questions)
+            print(this_arg_info)
             more_args = prompt(another_argument)
-            print(more_args)
-        
-        prsr_info["detail"] = prsr_help
-        complete_parser_info.append(prsr_info)
-        list_of_commands.append(complete_parser_info)
+            complete_args_info.append(this_arg_info)
+        """
+        #complete_parser_info.append(complete_args_info)
+
         more_commands = prompt(another_command)        
-        
-    print(list_of_commands)
+
+
 
 
     return None
@@ -326,7 +395,7 @@ def connect(args: Dict[str, str]):
         installation_path = iskbinstalled()
         if (installation_path != ''):
             data['status']['connected'] = True
-            write_toml_file(data)
+            write_toml_file(data,construct_toml_file(), 'w')
             installation_dir = os.path.dirname(installation_path)
             here_path = os.path.dirname(__file__)
             copy_file(str(Path(here_path, 'plugin.py')), str(Path(installation_dir, 'plugin.py')))
@@ -352,7 +421,7 @@ def disconnect(args: Dict[str, str]):
         installation_path = iskbinstalled()
         if (installation_path != ''):
             data['status']['connected'] = False
-            write_toml_file(data)
+            write_toml_file(data,construct_toml_file(), 'w')
             outject_connect_code(installation_path)
             p = os.path.dirname(installation_path)
             remove_file(str(Path(p, 'plugin.py')))
