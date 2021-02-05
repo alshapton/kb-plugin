@@ -20,7 +20,7 @@ guid = "00000000-0000-0000-0000-000000000000"
 help = "Plugin Manager for kb"
 
 [metadata]
-source= "https://github.com/gnebbia/kb/tree/test/plugins"
+source = "https://github.com/gnebbia/kb/tree/test/plugins"
 author = "Andrew Shapton"
 contact = "alshapton@gmail.com"
 
@@ -44,6 +44,3 @@ help = 'Enable an installed plugin'
 command = 'disable'
 function = 'manage_plugins'
 help = 'Disable an installed plugin'
-
-
-
