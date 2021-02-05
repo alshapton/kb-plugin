@@ -1,13 +1,14 @@
 from typing import Dict
 
+
 def inject_connect_code(p: str):
     import os
     from pathlib import Path
 
     from lineinfile import ALWAYS, AfterFirst, add_line_to_file
-  
+
     from scripts.utilities import getnow as getnow
-    
+
     s = os.linesep
     now = getnow()
 
@@ -43,17 +44,17 @@ def outject_connect_code(p: str):
     )
 
 
-def connect(args: Dict[str, str],path: str):
+def connect(args: Dict[str, str], path: str):
     import os
     import sys
-    
+
     from pathlib import Path
-    
+
     from kb.filesystem import copy_file
-    
+
     from scripts.utilities import iskbinstalled as iskbinstalled
     from scripts.files import construct_toml_file, write_toml_file, read_toml_file
-    
+
     data = read_toml_file(path)
     isconnected = data['status']['connected']
     if (not isconnected):
