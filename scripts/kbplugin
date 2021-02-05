@@ -102,152 +102,28 @@ class urlValidator(Validator):
             )
 
 
-def clear():
-    from subprocess import call
-    from sys import platform
 
-    if platform not in ('win32', 'cygwin'):
-        command = 'clear'
-    else:
-        command = 'cls'
-    call(command)
-    return None
-
-
-def construct_toml_file():
-    from pathlib import Path
-    return str(__file__ + '.toml')
-
-
-def write_toml_file(data: str, path: str, mode: str):
-    """
-    Write the config to the kbplugin.toml file.
-    Argument:
-    data    -   the data to write to the file.
-    """
-    import toml
-    # Write information to the .toml file.
-    with open(path, mode) as tcf:
-        tcf.write(toml.dumps(data))
-    return True
-
-
-def read_toml_file():
-    import toml
-    data = toml.load(construct_toml_file())
-    return (data)
-
-
-def write_file(data: str, path: str, mode: str):
-    """
-    Write data to a file.
-    Argument:
-    data    -   the data to write to a file.
-    """
-    f = open(path, mode)
-    f.write(data)
-    f.close()
-    return True
-
-
-def iskbinstalled():
-    try:
-        import kb.main
-        return kb.main.__file__
-    except ModuleNotFoundError:
-        return ''
-
-
-def getnow():
-    from datetime import datetime
-    return str(datetime.now())
-
-
-def inject_connect_code(p: str):
-    from pathlib import Path
-    from lineinfile import ALWAYS, AfterFirst, add_line_to_file
-    import os
-
-    s = os.linesep
-    now = getnow()
-
-    line = "    # KB-PLUGIN-CONN                                              #  (KPC)" + s
-    line = line + "    # Start of kb-plugin connection code                          #  (KPC)" + s
-    line = line + "    # Connected at : " + now + "                   #  (KPC)" + s
-    line = line + "    # DO NOT MODIFY THIS CONNECTION CODE                          #  (KPC)" + s
-    line = line + "    try:                                                          #  (KPC)" + s
-    line = line + "        from kb.plugin import loadModules                         #  (KPC)" + s
-    line = line + "        loadModules('commands','','',COMMANDS,DEFAULT_CONFIG,cmd) #  (KPC)" + s
-    line = line + "    except ModuleNotFoundError:                                   #  (KPC)" + s
-    line = line + "        pass                                                      #  (KPC)" + s
-    line = line + "    # End of kb-plugin connection code                            #  (KPC)" + s
-    line = line + "    # KB-PLUGIN-CONN                                              #  (KPC)" + s
-
-    add_line_to_file(
-        p,
-        line,
-        inserter=AfterFirst(r"cmd_params = vars"),
-        backup=ALWAYS,
-        backup_ext=".original",
-        )
-
-
-def outject_connect_code(p: str):
-    from pathlib import Path
-    from lineinfile import ALWAYS, remove_lines_from_file
-
-    remove_lines_from_file(
-        p,
-        regexp=r"\b(KPC)\b",
-    )
 
 def construct_title():
+    import os
+    from scripts.utilities import iskbinstalled as iskbinstalled
     if iskbinstalled():
         from kb import __version__ as kb_version
     else:
         kb_version = '?.?.?'
 
-    title = '# -*- encoding: utf-8 -*-\n'
-    title = title + '# kb v' + kb_version + '\n'
-    title = title + '# A knowledge base organizer\n'
-    title = title + '# Copyright © 2020, gnc.\n'
-    title = title + '# See /LICENSE for licensing information.\n\n'
+    title = '# -*- encoding: utf-8 -*-' + os.linesep
+    title = title + '# kb v' + kb_version  + os.linesep
+    title = title + '# A knowledge base organizer'  + os.linesep
+    title = title + '# Copyright © 2020, gnc.'  + os.linesep
+    title = title + '# See /LICENSE for licensing information.' + os.linesep + os.linesep
     return title
 
-
-def create_structure(base_dir: str, plugin_name: str):
-    from kb.filesystem import create_directory, touch_file
-    from pathlib import Path
-
-    # Create specific plugin named directories
-    plugin_dir = Path(base_dir, 'plugins', plugin_name)
-    create_directory(Path(plugin_dir, 'actions'))
-    create_directory(Path(plugin_dir, 'api'))
-    create_directory(Path(plugin_dir, 'commands'))
-    create_directory(Path(plugin_dir, 'printer'))
-    
-    # Populate with __init__.py files to enable package recognition
-    touch_file(Path(plugin_dir, '__init__.py'))
-    touch_file(Path(plugin_dir, 'actions', '__init__.py'))
-    touch_file(Path(plugin_dir, 'api', '__init__.py'))
-    touch_file(Path(plugin_dir, 'commands', '__init__.py'))
-    touch_file(Path(plugin_dir, 'printer', '__init__.py'))
-
-    return None
-
-def append_file(file1: str, file2: str):
-    fin = open(file1, "r")
-    data2 = fin.read()
-    fin.close()
-
-    fout = open(file2, "a")
-    fout.write(data2)
-    fout.close()
-    return None
 
 def skeleton(args: Dict[str, str]):
     from questionary import prompt
     import os
+    from scripts.utilities import getnow as getnow, clear as clear
     from pathlib import Path
     import uuid
 
@@ -256,23 +132,21 @@ def skeleton(args: Dict[str, str]):
 
     base_dir = Path(os.path.dirname(__file__))
     target_py_file = str(Path(base_dir, 'plugins', plugin_name, 'plugin_main_tmp.py'))
-    
+
     now = getnow()
 
     create_structure(base_dir, plugin_name)
-    title = construct_title()    
-    title = title + '#\n'
-    title = title + '# Main file for ' + plugin_name + ' plugin.\n'
-    title = title + '#\n'
-    title = title + '# :Copyright: © ' + now[0:4] + ', ' + copyright + '\n'
-    title = title + '# :License: GPLv3 (see /LICENSE).\n'
-    title = title + '#\n'
-   
-    write_file(title + '\n', target_py_file, 'w')
+    title = construct_title()
+    title = title + '#' + os.linesep
+    title = title + '# Main file for ' + plugin_name + ' plugin.' + os.linesep
+    title = title + '#' + os.linesep
+    title = title + '# :Copyright: © ' + now[0:4] + ', ' + copyright + os.linesep
+    title = title + '# :License: GPLv3 (see /LICENSE).' + os.linesep
+    title = title + '#' + os.linesep
+
+    write_file(title  + os.linesep, target_py_file, 'w')
     append_file(str(Path(base_dir, 'parts', 'plugin_main.part1')), target_py_file)
     sys.exit(0)
-
-
 
     target_toml_file = str(Path(base_dir, 'config.tmp.toml'))
     os.chdir(Path.home())
@@ -315,15 +189,15 @@ def skeleton(args: Dict[str, str]):
     now = getnow()
 
     title = construct_title()
-    title = title + '#\n'
-    title = title + '# Plugin extension plugin configuration file.\n'
-    title = title + '#\n'
-    title = title + '# :Copyright: © ' + now[0:4] + ', ' + config['plugin_name'] + '\n'
-    title = title + '# :License: GPLv3 (see /LICENSE).\n'
-    title = title + '#\n\n'
+    title = title + '#' + os.linesep
+    title = title + '# Plugin extension plugin configuration file.' + os.linesep
+    title = title + '#' + os.linesep
+    title = title + '# :Copyright: © ' + now[0:4] + ', ' + config['plugin_name']  + os.linesep
+    title = title + '# :License: GPLv3 (see /LICENSE).' + os.linesep
+    title = title + '#' + os.linesep + os.linesep
     title = title + 'title = "Config file for ' + config['plugin_name'] + ' generated by kbplugin on ' + now[0:19] + '"'
 
-    write_file(title + '\n\n', target_toml_file, 'a')
+    write_file(title  + os.linesep + os.linesep, target_toml_file, 'a')
 
     toml_config = {
                     'config':
@@ -337,7 +211,7 @@ def skeleton(args: Dict[str, str]):
 
     write_toml_file(toml_config, target_toml_file, 'a')
 
-    write_file('\n', target_toml_file, 'a')
+    write_file( + os.linesep, target_toml_file, 'a')
     toml_metadata = {
                     'metadata':
                     {
@@ -362,7 +236,7 @@ def skeleton(args: Dict[str, str]):
                      }
                 }
 
-    write_file('\n', target_toml_file, 'a')
+    write_file(os.linesep, target_toml_file, 'a')
     write_toml_file(parser_config, target_toml_file, 'a')
 
     more_commands = {'another': True}
@@ -383,10 +257,9 @@ def skeleton(args: Dict[str, str]):
                             'help': prsr_help['help'],
                             }
         print(commands_config)
-        write_file('\n[[commands]]\n', target_toml_file, 'a')
+        write_file(os.linesep + '[[commands]]' + os.linesep, target_toml_file, 'a')
         write_toml_file(commands_config, target_toml_file, 'a')
 
-        exit
 
         complete_args_info = []
         """
@@ -433,66 +306,18 @@ def skeleton(args: Dict[str, str]):
     return None
 
 
-def connect(args: Dict[str, str]):
-    import os
-    from kb.filesystem import copy_file
-    from pathlib import Path
-    data = read_toml_file()
-    isconnected = data['status']['connected']
-    if (not isconnected):
-        installation_path = iskbinstalled()
-        if (installation_path != ''):
-            data['status']['connected'] = True
-            write_toml_file(data, construct_toml_file(), 'w')
-            installation_dir = os.path.dirname(installation_path)
-            here_path = os.path.dirname(__file__)
-            copy_file(str(Path(here_path, 'plugin.py')), str(Path(installation_dir, 'plugin.py')))
-            inject_connect_code(installation_path)
-            print('Connected to kb instance')
-            sys.exit(0)
-        else:
-            print('Cannot connect to kb - kb is not installed')
-            sys.exit(1)
-    else:
-        print('kb-plugin is already connected to the kb instance')
-        sys.exit(1)
-
-
-def disconnect(args: Dict[str, str]):
-    import os
-    from pathlib import Path
-    from kb.filesystem import remove_file
-
-    data = read_toml_file()
-    isconnected = data['status']['connected']
-    if (isconnected):
-        installation_path = iskbinstalled()
-        if (installation_path != ''):
-            data['status']['connected'] = False
-            write_toml_file(data, construct_toml_file(), 'w')
-            outject_connect_code(installation_path)
-            p = os.path.dirname(installation_path)
-            remove_file(str(Path(p, 'plugin.py')))
-            print('Disconnected from kb instance')
-            sys.exit(0)
-        else:
-            print('Cannot disconnect from kb - kb is not installed')
-            sys.exit(1)
-    else:
-        print('kb-plugin is already disconnected from the kb instance')
-        sys.exit(1)
-
 
 def stat(args: Dict[str, str]):
     from kb.printer.style import ALT_BGROUND, BOLD, UND, RESET
-
+    from scripts.utilities import iskbinstalled as iskbinstalled
+    from scripts.files import read_toml_file as read_toml_file
     PREFIX = ''
     SUFFIX = ''
     UPREFIX = ''
 
     if iskbinstalled():
         from kb import __version__ as kb_version
-        data = read_toml_file()
+        data = read_toml_file(__file__)
         isconnected = data['status']['connected']
         if args['no_color']:
             PREFIX = BOLD
@@ -507,7 +332,7 @@ def stat(args: Dict[str, str]):
         connectedtext = 'Not Installed'
         kb_version = connectedtext
 
-    kb_plugin_version = read_toml_file()['info']['version']
+    kb_plugin_version = read_toml_file(__file__)['info']['version']
     line1 = UPREFIX + "kb-plugin Status Information" + SUFFIX
     line2 = PREFIX + "kb-plugin Version  : " + kb_plugin_version + SUFFIX
     line3 = PREFIX + "kb Version         : " + kb_version + SUFFIX
@@ -518,6 +343,16 @@ def stat(args: Dict[str, str]):
     print(line3)
     print(line4)
 
+def disconnect(args: Dict[str, str]):
+    from scripts.integration import disconnect as disconnect_from_kb
+    disconnect_from_kb(args, __file__)
+    return None
+
+
+def connect(args: Dict[str, str]):
+    from scripts.integration import connect as connect_to_kb
+    connect_to_kb(args,__file__)
+    return None
 
 def parse_args(args: Sequence[str]) -> argparse.Namespace:
     """
@@ -533,13 +368,14 @@ def parse_args(args: Sequence[str]) -> argparse.Namespace:
     An argparse Namespace object with the provided arguments, which
     can be used in a simpler format.
     """
+    from scripts.files import read_toml_file as read_toml_file
 
     parser = argparse.ArgumentParser(prog='kbplugin',
                                      description='A plugin manager for kb')
     parser.add_argument(
         "--version",
         action="version",
-        version="%(prog)s {}".format(read_toml_file()['info']['version']))
+        version="%(prog)s {}".format(read_toml_file(__file__)['info']['version']))
 
     # Main Commands
 
