@@ -1,0 +1,54 @@
+# END OF USER FUNCTIONS
+
+# DO NOT EDIT ANY FURTHER IN THIS FILE !
+
+
+def register_command(COMMANDS: dict, _None, fn):
+    # DO NOT EDIT THIS FUNCTION IN ANY WAY !
+    import os
+    from pathlib import Path
+    import kb.plugin as utils
+    return utils.register_command(COMMANDS, str(Path(os.path.dirname(__file__), "config.toml")), entry)
+
+
+def metadata(args, config):
+    # DO NOT EDIT THIS FUNCTION IN ANY WAY !
+    import os
+    from pathlib import Path
+    from kb.plugin import metadata as print_metadata
+    return print_metadata(args, config, str(Path(os.path.dirname(__file__), "config.toml")), '', '')
+
+
+def entry(args: Dict[str, str], config: Dict[str, str]):
+    # DO NOT EDIT THIS FUNCTION IN ANY WAY !
+    import kb.initializer as initializer
+    from kb.plugin import get_plugin_commands, get_plugin_info
+
+    # Get this plugin's location
+    filename = __file__
+
+    # Check initialization
+    initializer.init(config)
+
+    # Initialize empty list of commands for this plugin to populate
+    icmds = {}
+
+    # Retrieve list of commands for this plugin
+    plugin_commands = get_plugin_commands(filename)
+
+    # Assemble the list of commands for this plugin
+    # and append to the mandatory metadata command
+    for icmd in plugin_commands:
+        comm = {icmd[0]: globals()[icmd[1]]}
+        icmds.update(comm)
+
+    # Retrieve the parser entry point for this plugin
+    plugin_entry = get_plugin_info(filename)['parser']['entry']
+
+    cmd = args[plugin_entry]
+    CMDS = {
+        'metadata': metadata
+    }
+    # Combine mandatory commands with user-supplied commands
+    CMDS.update(icmds)
+    CMDS[cmd](args, config)

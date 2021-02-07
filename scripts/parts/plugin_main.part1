@@ -1,0 +1,39 @@
+import argparse
+from typing import Dict
+
+#  (CACLASSES)
+
+def register_plugin(parser: argparse, subparsers, config):
+    from kb.plugin import get_plugin_info
+    from kb.printer.style import BOLD, RESET
+    # DO NOT EDIT THIS PART OF THE FUNCTION
+    # Get overall content for registratioon of plugin
+    info = get_plugin_info(__file__)
+    # Get main parser information
+    prsr = info['parser']
+    P = prsr['prefix'] + "_parser"
+    PS = prsr['prefix'] + '_subparsers'
+    # Create parsers
+    globals()[P] = subparsers.add_parser(prsr['prefix'], help=prsr['help'])
+    globals()[PS] = globals()[P].add_subparsers(help=prsr['detail'], dest=prsr['entry'])
+    globals()[PS].required = True
+
+    # Create subparsers
+    # Create MANDATORY metadata parser - this NEVER changes
+    _parser_metadata = globals()[PS].add_parser('metadata', help='Show this plugin\'s metadata')
+    _parser_metadata.add_argument(
+        "-v", "--verbose",
+        help="Show ALL plugin information",
+        action='store_true',
+        dest='verbose',
+        default=False)
+    _parser_metadata.add_argument(
+        "-n", "--no-color",
+        help="Enable no-color mode",
+        action='store_false',
+        dest='no_color',
+        default=True)
+    # End of MANDATORY metadata parser
+
+    # ADD YOUR PARSER CODE HERE:
+    # User-supplied commands

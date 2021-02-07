@@ -64,3 +64,9 @@ def append_file(file1: str, file2: str):
     fout.write(data2)
     fout.close()
     return None
+
+def read_file(file: str):
+    fhandle = open(file, "r")
+    data = fhandle.read()
+    fhandle.close()
+    return data
