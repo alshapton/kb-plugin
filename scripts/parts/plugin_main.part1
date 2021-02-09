@@ -3,6 +3,7 @@ from typing import Dict
 
 #  (CACLASSES)
 
+#  (UDT)
 def register_plugin(parser: argparse, subparsers, config):
     from kb.plugin import get_plugin_info
     from kb.printer.style import BOLD, RESET

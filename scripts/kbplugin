@@ -128,13 +128,14 @@ def skeleton(args: Dict[str, str]):
     from lineinfile import AfterFirst, add_line_to_file, remove_lines_from_file
     from questionary import prompt
 
+    from kb.printer.style import ALT_BGROUND, BOLD, UND, RESET
+
     from scripts.files import append_file as append_file, \
         create_structure as create_structure, \
         read_file as read_file, \
         read_toml_file as read_toml_file, \
         write_file as write_file, \
-        write_toml_file as write_toml_file
-    
+        write_toml_file as write_toml_file    
     from scripts.utilities import getnow as getnow, clear as clear
 
 
@@ -146,6 +147,9 @@ def skeleton(args: Dict[str, str]):
     target_py_file = str(Path(base_dir, 'plugins', plugin_name, 'plugin_main_tmp.py'))
     target_toml_file = str(Path(base_dir, 'config.tmp.toml'))
     target_custom_actions_file = str(Path(base_dir, 'custom_classes.py'))
+    target_udt_file = str(Path(base_dir, 'custom_types.py'))
+
+    
     write_file('', target_custom_actions_file, 'w')
 
     now = getnow()
@@ -252,9 +256,12 @@ def skeleton(args: Dict[str, str]):
 
     write_file(s, target_toml_file, 'a')
     write_toml_file(parser_config, target_toml_file, 'a')
-
+    clear()
+    comm_title = BOLD + "First command for the " + config["plugin_name"] + ' plugin :' + RESET + s
     more_commands = {'another': True}
     while more_commands['another']:
+        clear()
+        comm_title = BOLD + "Next command for the " + config["plugin_name"] + ' plugin :' + RESET + s
         # Gather commaand information
         prsr_info = prompt(command_name)
         command_questions = {'type': 'text', 'name': 'help',
@@ -274,8 +281,12 @@ def skeleton(args: Dict[str, str]):
         complete_args_info = []
         
         # Get arguments
+        arg_title = BOLD + "First argument for the " + prsr_info["command"] + ' command :' + RESET + s
         more_args = {'another': True}
         while more_args['another']:
+            clear()
+            print(arg_title)
+            arg_title = BOLD + "Next argument for the " + prsr_info["command"] + ' command :' + RESET + s
             this_arg_info = []
             arg_questions = [
                         {'type': 'text', 'name': 'argument', 'message': 'Option name(s): ', 'qmark': '-',},
@@ -304,12 +315,16 @@ def skeleton(args: Dict[str, str]):
                         {'type': 'text', 'name': 'dest', 'message': 'Dest? ', 'qmark': '-',},
                         ]
             this_arg_info = prompt(arg_questions)
-            print(this_arg_info)
             write_file(s + "    _parser_" + prsr_info['command'] + ".add_argument(",target_py_file, 'a')
             write_file(s + "        " + this_arg_info['argument'] + ',' ,target_py_file, 'a')
-            write_file(s + "        " + "help='" + this_arg_info['helpmessage'] + "',", target_py_file, 'a')
-            # Action
             
+            # Required
+            if (this_arg_info['required']  == 'Yes'):
+                write_file(s + "        " + "required=True,", target_py_file, 'a')
+            else:
+                write_file(s + "        " + "required=False,", target_py_file, 'a')
+
+            # Action
             action = this_arg_info['action']
             
             if (action != 'Custom Action'):
@@ -317,21 +332,67 @@ def skeleton(args: Dict[str, str]):
 
             if (action in ['store_const', 'append_const']):
                     write_file(s + "        const='" + this_arg_info['const'] + "',", target_py_file, 'a')
+            
             if (action == 'version'):
                 write_file(s + "        version='" + config['version'] + "',", target_py_file, 'a')
+            
             if (action == 'Custom Action'):
                 # Write/append custom action classes
                 custom_actions = True
-                write_file(s + "        action='" + this_arg_info['customaction'] + "',", target_py_file, 'a')
+                write_file(s + "        action=" + this_arg_info['customaction'] + ",", target_py_file, 'a')
                 write_file('class ' + this_arg_info['customaction']+'(argparse.Action):', target_custom_actions_file, 'a')
-                write_file(s+ '"""Custom class for ' + this_arg_info['customaction'] + '"""', target_custom_actions_file, 'a')
+                write_file(s+ '    """Custom class for ' + this_arg_info['customaction'] + '"""', target_custom_actions_file, 'a')
                 write_file (s+ '    def __call__(self, parser, namespace, values, option_string=None):' , target_custom_actions_file, 'a')
-                write_file (s+ '    # Write your custom class code here' + s + s, target_custom_actions_file, 'a')
-        
+                write_file (s+ '    # Write your custom class code here' + s, target_custom_actions_file, 'a')
+                write_file ('        pass' + s + s, target_custom_actions_file, 'a')
+
+            # Help
+            if (this_arg_info['arghelp'] == 'Yes'):
+                write_file(s + "        " + "help='" + this_arg_info['helpmessage'] + "',", target_py_file, 'a')
+ 
+            # nargs
+            if (this_arg_info['nargs'] == '>9'):
+                write_file(s + "        " + "nargs='XXXXXXXXXX',  # Ensure that the correct number of args is inserted here", target_py_file, 'a')
+            else:
+                if (this_arg_info['nargs'] != ''):
+                    write_file(s + "        " + "nargs='" + this_arg_info['nargs'] + "',", target_py_file, 'a')
+
+            # Default value
+            if (this_arg_info['default']  != ''):
+                write_file(s + "        " + "default='" + this_arg_info['default'] + "',", target_py_file, 'a')
+
+            # Type
+            if (this_arg_info['type'] != 'User Defined'):
+                if (this_arg_info['type'] != ''):
+                    write_file(s + "        " + "type='" + this_arg_info['type'] + "',", target_py_file, 'a')
+            else:
+                write_file(s + "        " + "type=" + this_arg_info['userdefinedtype'] + ",", target_py_file, 'a')
+                write_file("def " + this_arg_info['userdefinedtype'] + "(value):" + s, target_udt_file, 'a')
+                write_file("    # Definition for user-defined type for parser" + s, target_udt_file, 'a')
+                write_file("    # Insert your code here" + s, target_udt_file, 'a')
+
+                write_file("    Return None" + s + s, target_udt_file, 'a')
+               
+
+
+            # Choices
+            if (this_arg_info['choices'] != ''):
+                write_file(s + "        " + "choices='" + this_arg_info['choices'] + "',", target_py_file, 'a')
+
+            # Metavar
+            if (this_arg_info['metavar'] != ''):
+                write_file(s + "        " + "metavar='" + this_arg_info['metavar'] + "',", target_py_file, 'a')
+
+            # Dest
+            if (this_arg_info['dest'] != ''):
+                write_file(s + "        " + "dest='" + this_arg_info['dest'] + "',", target_py_file, 'a')
+
             write_file(s + "        )" + s, target_py_file, 'a')
             
 
             more_args = prompt(another_argument)
+            clear()
+
             complete_args_info.append(this_arg_info)
 
         # complete_parser_info.append(complete_args_info)
@@ -345,20 +406,29 @@ def skeleton(args: Dict[str, str]):
 
         write_file(s + 'def '+ command['function'] + '(args: Dict[str, str], config: Dict[str, str]):' + s, target_py_file, 'a')
         write_file('    # Insert code for the ' + command['command'] + ' function here. ' + s, target_py_file, 'a')
-        write_file('   return None' + s, target_py_file, 'a')
+        write_file('    return None' + s, target_py_file, 'a')
 
     append_file(str(Path(base_dir, 'parts', 'plugin_main.part3')), target_py_file)
 
     # Inject custom action classes into the plugin_main.py file
     custom_action_classes = read_file(target_custom_actions_file)
-    print(target_py_file)
-    print(custom_action_classes)
+
     add_line_to_file(
         target_py_file,
         custom_action_classes,
-        inserter=AfterFirst(r"\b#  (CACLASSES)\b"),
+        r"\b(CACLASSES)\b"
     )
     remove_lines_from_file(target_py_file, regexp=r"\b#  (CACLASSES)\b",)
+
+    # Inject custom type definitions into the plugin_main.py file
+    udts = read_file(target_udt_file)
+
+    add_line_to_file(
+        target_py_file,
+        udts,
+        r"\b(UDT)\b"
+    )
+    remove_lines_from_file(target_py_file, regexp=r"\b#  (UDT)\b",)
     return None
 
 
