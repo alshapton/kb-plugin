@@ -11,9 +11,6 @@ plugin enabler module
 :License: GPLv3 (see /LICENSE).
 """
 
-import argparse
-from typing import Dict, Sequence
-
 __all__ = ()
 
 
@@ -33,9 +30,14 @@ def loadModules(function, parser, subparsers, COMMANDS, config, cmd):
             dir.append(d)
     # load the modules
     for plugin in dir:
-        disabled = os.path.isfile(str(Path("kb", "plugins", plugin, ".disabled")))
-        if (not disabled or cmd == 'plugins'):  # if this is a "plugins" command - load ALL plugins irrespective of enabled/disabled
-            res[plugin] = __import__(str(Path("kb", "plugins", plugin, "plugin_main")).replace(os.path.sep, '.'), fromlist=["*"])
+        disabled = os.path.isfile(str(Path("kb",
+                                      "plugins", plugin, ".disabled")))
+        # If this is a "plugins" command - load ALL
+        # plugins irrespective of enabled/disabled
+        if (not disabled or cmd == 'plugins'):
+            res[plugin] = __import__(str(Path("kb", "plugins", plugin,
+                                     "plugin_main")).replace(os.path.sep, '.'),
+                                     fromlist=["*"])
             if (function == 'parser'):
                 res[plugin].register_plugin(parser, subparsers, config)
             if (function == 'commands'):
@@ -44,8 +46,6 @@ def loadModules(function, parser, subparsers, COMMANDS, config, cmd):
 
 
 def load_plugin_data(which: str, toml_data_file):
-    import os
-    from pathlib import Path
     import toml
     try:
         toml_data = toml.load(toml_data_file)
@@ -90,7 +90,7 @@ def register_command(COMMANDS: dict, TOML_DATA_FILE, fn):
 
 
 def print_metadata(args, PLUGIN_METADATA, config, status, list_type):
-    from kb.printer.style import ALT_BGROUND, BOLD, UND, RESET
+    from kb.printer.style import BOLD, RESET
     if (status is True):
         status_text = 'Enabled'
     else:
@@ -136,7 +136,8 @@ def get_modules():
     import re
     import sys
 
-    modules = [m.__name__[:-12] for m in sys.modules.values() if (re.search(r"plugin_main$", m.__name__) and ('plugins.plugin_main' not in m.__name__))]
+    modules = [m.__name__[:-12] for m in sys.modules.values()
+               if (re.search(r"plugin_main$", m.__name__) and ('plugins.plugin_main' not in m.__name__))]  # noqa: E501
     mods = []
     for _module in modules:
         mod = os.path.basename(_module.replace(".", os.path.sep))
@@ -147,8 +148,9 @@ def get_modules():
 def get_plugin_status(plugin_name: str):
     import os
     from pathlib import Path
-    mods_intermediate_root = str(Path(os.path.dirname(__file__), "plugins", plugin_name))
-    module_path = (str(Path(os.path.dirname(mods_intermediate_root) + os.path.sep + plugin_name)))
+    mods_intermediate_root = str(Path(os.path.dirname(__file__),
+                                 "plugins", plugin_name))
+    module_path = (str(Path(os.path.dirname(mods_intermediate_root), plugin_name)))  # noqa: E501
     return os.path.exists(str(Path(module_path, ".disabled")))
 
 
@@ -159,7 +161,8 @@ def get_plugin_info(filename):
 
     # Read config.toml file to retrieve commands
     try:
-        toml_data = toml.load(str(Path(os.path.dirname(filename), "config.toml")))
+        toml_data = toml.load(str(Path(os.path.dirname(filename),
+                              "config.toml")))
     except toml.TomlDecodeError:
         print("Error: The plugin config data is not in the toml format")
     except FileNotFoundError:
@@ -174,7 +177,8 @@ def get_plugin_commands(filename):
 
     # Read config.toml file to retrieve commands
     try:
-        toml_data = toml.load(str(Path(os.path.dirname(filename), "config.toml")))
+        toml_data = toml.load(str(Path(os.path.dirname(filename),
+                              "config.toml")))
     except toml.TomlDecodeError:
         print("Error: The plugin config data is not in the toml format")
     except FileNotFoundError:

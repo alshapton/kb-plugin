@@ -1,9 +1,22 @@
+# -*- encoding: utf-8 -*-
+# kb-plugin v0.0.1
+# A plugin manager for kb
+# Copyright © 2021, alshapton.
+# See /LICENSE for licensing information.
+
+"""
+kbplugin integration  module
+
+:Copyright: © 2021, alshapton.
+:License: GPLv3 (see /LICENSE).
+"""
+
+
 from typing import Dict
 
 
 def inject_connect_code(p: str):
     import os
-    from pathlib import Path
 
     from lineinfile import ALWAYS, AfterFirst, add_line_to_file
 
@@ -12,36 +25,30 @@ def inject_connect_code(p: str):
     s = os.linesep
     now = getnow()
 
-    line = "    # KB-PLUGIN-CONN                                              #  (KPC)" + s
-    line = line + "    # Start of kb-plugin connection code                          #  (KPC)" + s
-    line = line + "    # Connected at : " + now + "                   #  (KPC)" + s
-    line = line + "    # DO NOT MODIFY THIS CONNECTION CODE                          #  (KPC)" + s
-    line = line + "    try:                                                          #  (KPC)" + s
-    line = line + "        from kb.plugin import loadModules                         #  (KPC)" + s
-    line = line + "        loadModules('commands','','',COMMANDS,DEFAULT_CONFIG,cmd) #  (KPC)" + s
-    line = line + "    except ModuleNotFoundError:                                   #  (KPC)" + s
-    line = line + "        pass                                                      #  (KPC)" + s
-    line = line + "    # End of kb-plugin connection code                            #  (KPC)" + s
-    line = line + "    # KB-PLUGIN-CONN                                              #  (KPC)" + s
+    line = "    # KB-PLUGIN-CONN                                              #  (KPC)" + s         # noqa: E501
+    line = line + "    # Start of kb-plugin connection code                          #  (KPC)" + s  # noqa: E501
+    line = line + "    # Connected at : " + now + "                   #  (KPC)" + s                 # noqa: E501
+    line = line + "    # DO NOT MODIFY THIS CONNECTION CODE                          #  (KPC)" + s  # noqa: E501
+    line = line + "    try:                                                          #  (KPC)" + s  # noqa: E501
+    line = line + "        from kb.plugin import loadModules                         #  (KPC)" + s  # noqa: E501
+    line = line + "        loadModules('commands','','',COMMANDS,DEFAULT_CONFIG,cmd) #  (KPC)" + s  # noqa: E501
+    line = line + "    except ModuleNotFoundError:                                   #  (KPC)" + s  # noqa: E501
+    line = line + "        pass                                                      #  (KPC)" + s  # noqa: E501
+    line = line + "    # End of kb-plugin connection code                            #  (KPC)" + s  # noqa: E501
+    line = line + "    # KB-PLUGIN-CONN                                              #  (KPC)" + s  # noqa: E501
 
-    add_line_to_file(
-        p,
-        line,
-        inserter=AfterFirst(r"cmd_params = vars"),
-        backup=ALWAYS,
-        backup_ext=".original",
-        )
+    add_line_to_file(p, line, inserter=AfterFirst(r"cmd_params = vars"),
+                     backup=ALWAYS, backup_ext=".original",)
+
+    return True
 
 
 def outject_connect_code(p: str):
-    from pathlib import Path
 
-    from lineinfile import ALWAYS, remove_lines_from_file
+    from lineinfile import remove_lines_from_file
 
-    remove_lines_from_file(
-        p,
-        regexp=r"\b(KPC)\b",
-    )
+    remove_lines_from_file(p, regexp=r"\b(KPC)\b",)
+    return True
 
 
 def connect(args: Dict[str, str], path: str):
@@ -53,7 +60,8 @@ def connect(args: Dict[str, str], path: str):
     from kb.filesystem import copy_file
 
     from scripts.utilities import iskbinstalled as iskbinstalled
-    from scripts.files import construct_toml_file, write_toml_file, read_toml_file
+    from scripts.files import construct_toml_file, write_toml_file, \
+        read_toml_file
 
     data = read_toml_file(path)
     isconnected = data['status']['connected']
@@ -64,7 +72,8 @@ def connect(args: Dict[str, str], path: str):
             write_toml_file(data, construct_toml_file(path), 'w')
             installation_dir = os.path.dirname(installation_path)
             here_path = os.path.dirname(path)
-            copy_file(str(Path(here_path, 'plugin.py')), str(Path(installation_dir, 'plugin.py')))
+            copy_file(str(Path(here_path, 'plugin.py')),
+                      str(Path(installation_dir, 'plugin.py')))
             inject_connect_code(installation_path)
             print('Connected to kb instance')
             sys.exit(0)
@@ -84,7 +93,8 @@ def disconnect(args: Dict[str, str], path: str):
 
     from kb.filesystem import remove_file
 
-    from scripts.files import construct_toml_file, write_toml_file, read_toml_file
+    from scripts.files import construct_toml_file, \
+        write_toml_file, read_toml_file
 
     from scripts.utilities import iskbinstalled as iskbinstalled
 

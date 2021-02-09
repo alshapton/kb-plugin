@@ -10,6 +10,7 @@ def getnow():
     from datetime import datetime
     return str(datetime.now())
 
+
 def clear():
     from subprocess import call
     from sys import platform
