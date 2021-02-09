@@ -4,4 +4,4 @@ title = "kb-plugin config"
 version = "0.0.1"
 
 [status]
-connected = false
+connected = true

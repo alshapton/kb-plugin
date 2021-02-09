@@ -16,6 +16,15 @@ from typing import Dict
 
 
 def inject_connect_code(p: str):
+    """
+    Insert the plugin hook code for the plugin manager .
+
+    Arguments:
+    p           -   a string containing the filename of the
+                    target plugin_main.py file
+
+    Return:     -   True
+    """
     import os
 
     from lineinfile import ALWAYS, AfterFirst, add_line_to_file
@@ -25,6 +34,7 @@ def inject_connect_code(p: str):
     s = os.linesep
     now = getnow()
 
+    # Set up the "line" to inject into the plugin_main.py file
     line = "    # KB-PLUGIN-CONN                                              #  (KPC)" + s         # noqa: E501
     line = line + "    # Start of kb-plugin connection code                          #  (KPC)" + s  # noqa: E501
     line = line + "    # Connected at : " + now + "                   #  (KPC)" + s                 # noqa: E501
@@ -36,7 +46,9 @@ def inject_connect_code(p: str):
     line = line + "        pass                                                      #  (KPC)" + s  # noqa: E501
     line = line + "    # End of kb-plugin connection code                            #  (KPC)" + s  # noqa: E501
     line = line + "    # KB-PLUGIN-CONN                                              #  (KPC)" + s  # noqa: E501
+    # There is a comment at the end of each line to aid removal
 
+    # Inject hook code
     add_line_to_file(p, line, inserter=AfterFirst(r"cmd_params = vars"),
                      backup=ALWAYS, backup_ext=".original",)
 
@@ -44,14 +56,33 @@ def inject_connect_code(p: str):
 
 
 def outject_connect_code(p: str):
+    """
+    Remove the plugin hook code from the plugin manager .
 
+    Arguments:
+    p           -   a string containing the filename of the
+                    target plugin_main.py file
+
+    Return:     -   True
+    """
     from lineinfile import remove_lines_from_file
 
+    # Remove the connectivity code based on the comment (KPC)
     remove_lines_from_file(p, regexp=r"\b(KPC)\b",)
     return True
 
 
 def connect(args: Dict[str, str], path: str):
+    """
+    Connect the plugin manager to the main kb infrastructure.
+
+    Arguments:
+    args        -   Dictionary containing the command-line arguments
+                    (not used but needs to be there)
+    path        -   toml file of the kbplugin configuration
+
+    Return:     -   N/A
+    """
     import os
     import sys
 
@@ -86,6 +117,16 @@ def connect(args: Dict[str, str], path: str):
 
 
 def disconnect(args: Dict[str, str], path: str):
+    """
+    Disconnect the plugin manager from the main kb infrastructure.
+
+    Arguments:
+    args        -   Dictionary containing the command-line arguments
+                    (not used but needs to be there)
+    path        -   toml file of the kbplugin configuration
+
+    Return:     -   N/A
+    """
     import os
     import sys
 
