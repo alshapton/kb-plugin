@@ -159,6 +159,7 @@ def disconnect(args: Dict[str, str], path: str):
         print('kb-plugin is already disconnected from the kb instance')
         sys.exit(1)
 
+
 def stat(args: Dict[str, str], path: str):
     from kb.printer.style import BOLD, UND, RESET
     from scripts.utilities import iskbinstalled as iskbinstalled
@@ -194,3 +195,5 @@ def stat(args: Dict[str, str], path: str):
     print(line2)
     print(line3)
     print(line4)
+
+    return None

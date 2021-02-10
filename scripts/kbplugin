@@ -336,8 +336,8 @@ def skeleton(args: Dict[str, str]):
             arg_questions = [
                             {'type': 'text', 'name': 'argument', 'message': 'Option name(s): ', 'qmark': '-', },
                             {'type': 'select', 'name': 'action', 'message': 'Action to be taken: ', 'qmark': '-',
-                                'choices': ['store', 'store_const', 'store_true', 'store_false', 'append', 'append_const',
-                                'count', 'help', 'version', 'extend', 'Custom Action'], },
+                             'choices': ['store', 'store_const', 'store_true', 'store_false', 'append', 'append_const',
+                                    'count', 'help', 'version', 'extend', 'Custom Action'], },
                             {'type': 'text', 'name': 'const', 'message': 'Constant to be stored: ', 'qmark': '   -',
                                 "when": lambda x: x["action"] in ["store_const", "append_const"]},
                             {'type': 'text', 'name': 'customaction', 'message': 'Custom Action name: ', 'qmark': '   -',
@@ -441,10 +441,10 @@ def skeleton(args: Dict[str, str]):
 
     append_file(str(Path(base_dir, 'parts', 'plugin_main.part2')), target_py_file)
 
-    inject_actions_classes(s,target_toml_file, 
-                            target_py_file, 
-                            target_custom_actions_file,
-                            target_udt_file)
+    inject_actions_classes(s, target_toml_file,
+                           target_py_file,
+                           target_custom_actions_file,
+                           target_udt_file)
 
     append_file(str(Path(base_dir, 'parts', 'plugin_main.part3')), target_py_file)
 
@@ -455,6 +455,7 @@ def stat(args: Dict[str, str]):
     from scripts.integration import stat as stat
     stat(args, __file__)
     return None
+
 
 def disconnect(args: Dict[str, str]):
     from scripts.integration import disconnect as disconnect_from_kb
