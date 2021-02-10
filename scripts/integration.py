@@ -35,6 +35,7 @@ def inject_connect_code(p: str):
     now = getnow()
 
     # Set up the "line" to inject into the plugin_main.py file
+    # Ignore line lengthd
     line = "    # KB-PLUGIN-CONN                                              #  (KPC)" + s         # noqa: E501
     line = line + "    # Start of kb-plugin connection code                          #  (KPC)" + s  # noqa: E501
     line = line + "    # Connected at : " + now + "                   #  (KPC)" + s                 # noqa: E501
@@ -157,3 +158,39 @@ def disconnect(args: Dict[str, str], path: str):
     else:
         print('kb-plugin is already disconnected from the kb instance')
         sys.exit(1)
+
+def stat(args: Dict[str, str], path: str):
+    from kb.printer.style import BOLD, UND, RESET
+    from scripts.utilities import iskbinstalled as iskbinstalled
+    from scripts.files import read_toml_file as read_toml_file
+    PREFIX = ''
+    SUFFIX = ''
+    UPREFIX = ''
+
+    if iskbinstalled():
+        from kb import __version__ as kb_version
+        data = read_toml_file(path)
+        isconnected = data['status']['connected']
+        if args['no_color']:
+            PREFIX = BOLD
+            SUFFIX = RESET
+            UPREFIX = BOLD + UND
+
+        if (isconnected):
+            connectedtext = 'Connected'
+        else:
+            connectedtext = 'Disconnected'
+    else:
+        connectedtext = 'Not Installed'
+        kb_version = connectedtext
+
+    kb_plugin_version = read_toml_file(path)['info']['version']
+    line1 = UPREFIX + "kb-plugin Status Information" + SUFFIX
+    line2 = PREFIX + "kb-plugin Version  : " + kb_plugin_version + SUFFIX
+    line3 = PREFIX + "kb Version         : " + kb_version + SUFFIX
+    line4 = PREFIX + "Status             : " + connectedtext + SUFFIX
+
+    print(line1)
+    print(line2)
+    print(line3)
+    print(line4)
