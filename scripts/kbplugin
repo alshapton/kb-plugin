@@ -25,7 +25,8 @@ class pluginNameValidator(Validator):
             pass
         else:
             raise ValidationError(
-                message="Please enter a plugin name between 4 and 10 characters/digits",
+                message="Please enter a plugin name "
+                + "between 4 and 10 characters/digits",
                 cursor_position=len(plugin_name.text),
             )
         regex = re.compile(r"^[a-z0-9]*$")
@@ -33,7 +34,8 @@ class pluginNameValidator(Validator):
             pass
         else:
             raise ValidationError(
-                message="Please enter a plugin name containing lowercase letters and digits",
+                message="Enter a plugin name containing "
+                        + "only lowercase letters and digits",
                 cursor_position=len(plugin_name.text),
             )
 
@@ -43,16 +45,16 @@ class semverValidator(Validator):
         import re
         if len(version.text) == 0:
             raise ValidationError(
-                message="Please enter an valid semver-compliant version string",
+                message="Enter an valid semver-compliant version string",
                 cursor_position=len(version.text),
             )
         else:
-            regex = re.compile(r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$")
+            regex = re.compile(r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$")  # noqa: E501
             if (re.match(regex, version.text)):
                 pass
             else:
                 raise ValidationError(
-                    message="Please enter an valid semver-compliant version string",
+                    message="Enter an valid semver-compliant version string",
                     cursor_position=len(version.text),
                 )
 
@@ -66,7 +68,7 @@ class emailValidator(Validator):
                 cursor_position=len(email.text),
             )
         else:
-            regex = re.compile(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)")
+            regex = re.compile(r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)")  # noqa: E501
             if (re.match(regex, email.text)):
                 pass
             else:
@@ -86,12 +88,12 @@ class urlValidator(Validator):
             )
         else:
             regex = re.compile(
-             r'^(?:http|ftp)s?://'                                                                   # http:// or https://
-             r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|'    # domain...
-             r'localhost|'                                                                           # localhost...
-             r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|'                                                  # ...or ipv4
-             r'\[?[A-F0-9]*:[A-F0-9:]+\]?)'                                                          # ...or ipv6
-             r'(?::\d+)?'                                                                            # optional port
+             r'^(?:http|ftp)s?://'                                                                   # http:// or https://       # noqa: E501
+             r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|'    # domain...                 # noqa: E501
+             r'localhost|'                                                                           # localhost...              # noqa: E501
+             r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|'                                                  # ...or ipv4                # noqa: E501
+             r'\[?[A-F0-9]*:[A-F0-9:]+\]?)'                                                          # ...or ipv6                # noqa: E501
+             r'(?::\d+)?'                                                                            # optional port             # noqa: E501
              r'(?:/?|[/?]\S+)$', re.IGNORECASE)
         if re.match(regex, repo.text):
             pass
@@ -102,7 +104,7 @@ class urlValidator(Validator):
             )
 
 
-def construct_title(s: str):    
+def construct_title(s: str):
     """
     Construct the title/comments for the top of the kb_plugin_main.py file
 
@@ -110,9 +112,9 @@ def construct_title(s: str):
     s           -   the correct line separator for the OS
     Return      -   Several lines of text containing the initial title comments
     """
-    
+
     from scripts.utilities import iskbinstalled as iskbinstalled
-    
+
     if iskbinstalled():
         from kb import __version__ as kb_version
     else:
@@ -125,11 +127,12 @@ def construct_title(s: str):
     title = title + '# See /LICENSE for licensing information.' + s + s
     return title
 
+
 def inject_actions_classes(s: str,
-                            target_toml_file: str, 
-                            target_py_file: str, 
-                            target_custom_actions_file: str,
-                            target_udt_file: str):
+                           target_toml_file: str,
+                           target_py_file: str,
+                           target_custom_actions_file: str,
+                           target_udt_file: str):
 
     from lineinfile import add_line_to_file, remove_lines_from_file
 
@@ -139,8 +142,11 @@ def inject_actions_classes(s: str,
     data = read_toml_file(target_toml_file[:-5])
     for command in data['commands']:
 
-        write_file(s + 'def ' + command['function'] + '(args: Dict[str, str], config: Dict[str, str]):' + s, target_py_file, 'a')
-        write_file('    # Insert code for the ' + command['command'] + ' function here. ' + s, target_py_file, 'a')
+        write_file(s + 'def ' + command['function'] +
+                   '(args: Dict[str, str], config: Dict[str, str]):' + s,
+                   target_py_file, 'a')
+        write_file('    # Insert code for the ' + command['command']
+                   + ' function here. ' + s, target_py_file, 'a')
         write_file('    return None' + s, target_py_file, 'a')
 
     # Inject custom action classes into the plugin_main.py file
@@ -165,6 +171,7 @@ def inject_actions_classes(s: str,
     return True
 # =====================================================
 
+
 def skeleton(args: Dict[str, str]):
     import os
 
@@ -181,7 +188,7 @@ def skeleton(args: Dict[str, str]):
         read_file as read_file, \
         read_toml_file as read_toml_file, \
         write_file as write_file, \
-        write_toml_file as write_toml_file    
+        write_toml_file as write_toml_file
     from scripts.utilities import getnow as getnow, clear as clear
 
     # Get OS-dependent line separator
@@ -191,7 +198,8 @@ def skeleton(args: Dict[str, str]):
     copyright = 'Andrew Shapton'
 
     base_dir = Path(os.path.dirname(__file__))
-    target_py_file = str(Path(base_dir, 'plugins', plugin_name, 'plugin_main_tmp.py'))
+    target_py_file = str(Path(base_dir, 'plugins', plugin_name,
+                         'plugin_main_tmp.py'))
     target_toml_file = str(Path(base_dir, 'config.tmp.toml'))
     target_custom_actions_file = str(Path(base_dir, 'custom_classes.py'))
     target_udt_file = str(Path(base_dir, 'custom_types.py'))
@@ -210,7 +218,8 @@ def skeleton(args: Dict[str, str]):
     title = title + '#' + s
 
     write_file(title + s, target_py_file, 'w')
-    append_file(str(Path(base_dir, 'parts', 'plugin_main.part1')), target_py_file)
+    append_file(str(Path(base_dir, 'parts', 'plugin_main.part1')),
+                target_py_file)
 
     os.chdir(Path.home())
     clear()
@@ -236,11 +245,13 @@ def skeleton(args: Dict[str, str]):
                  # 'validate': lambda text: True if len(text) > 20 else "Please enter more than 20 characters"
                  },
                 {'type': 'text', 'name': 'detail', 'message': 'Further detail for help : ', 'qmark': '-', },
-                {'type': 'path', 'name': 'location', 'message': 'Location of the plugin code (Press <TAB>): ',
+                {'type': 'path', 'name': 'location',
+                 'message': 'Location of the plugin code (Press <TAB>): ',
                  'qmark': '-', 'only_directories': True,
                  # 'validate': lambda a: True if a[1] != '.' else "You should select a directory which is not hidden"
                  },
-                {'type': 'text', 'name': 'source', 'message': 'Remote repo. location: ',
+                {'type': 'text', 'name': 'source',
+                 'message': 'Remote repo. location: ',
                  'qmark': '-',
                  # 'validate': urlValidator,
                  },
@@ -258,7 +269,9 @@ def skeleton(args: Dict[str, str]):
     title = title + '# :Copyright: © ' + now[0:4] + ', ' + copyright + s
     title = title + '# :License: GPLv3 (see /LICENSE).' + s
     title = title + '#' + s + s
-    title = title + 'title = "Config file for ' + config['plugin_name'] + ' generated by kbplugin on ' + now[0:19] + '"'
+    title = title + 'title = "Config file for ' \
+        + config['plugin_name'] + ' generated by kbplugin on ' \
+        + now[0:19] + '"'
 
     write_file(title + s + s, target_toml_file, 'a')
 
@@ -285,9 +298,12 @@ def skeleton(args: Dict[str, str]):
     write_file(s, target_toml_file, 'a')
     write_toml_file(toml_metadata, target_toml_file, 'a')
 
-    command_name = {'type': 'text', 'name': 'command', 'message': 'Enter the command: ', 'qmark': '-', }
-    another_command = {'type': 'confirm', 'name': 'another', 'message': 'Another command ?', 'qmark': '-', }
-    another_argument = {'type': 'confirm', 'name': 'another', 'message': 'Another argument ?', 'qmark': '-', }
+    command_name = {'type': 'text', 'name': 'command',
+                    'message': 'Enter the command: ', 'qmark': '-', }
+    another_command = {'type': 'confirm', 'name': 'another',
+                       'message': 'Another command ?', 'qmark': '-', }
+    another_argument = {'type': 'confirm', 'name': 'another',
+                        'message': 'Another argument ?', 'qmark': '-', }
 
     parser_config = {
                     'parser':
@@ -302,15 +318,19 @@ def skeleton(args: Dict[str, str]):
     write_file(s, target_toml_file, 'a')
     write_toml_file(parser_config, target_toml_file, 'a')
     clear()
-    comm_title = BOLD + "First command for the " + config["plugin_name"] + ' plugin :' + RESET + s
+    comm_title = BOLD + "First command for the " \
+        + config["plugin_name"] + ' plugin :' + RESET + s
     more_commands = {'another': True}
     while more_commands['another']:
         clear()
-        comm_title = BOLD + "Next command for the " + config["plugin_name"] + ' plugin :' + RESET + s
+        comm_title = BOLD + "Next command for the " \
+            + config["plugin_name"] + ' plugin :' + RESET + s
         # Gather commaand information
         prsr_info = prompt(command_name)
         command_questions = {'type': 'text', 'name': 'help',
-                             'message': 'Help for the ' + prsr_info["command"] + ' command: ', 'qmark': '-', }
+                             'message': 'Help for the '
+                             + prsr_info["command"] + ' command: ',
+                             'qmark': '-', }
         prsr_help = prompt(command_questions)
         commands_config = {
                             'command': prsr_info["command"],
@@ -320,113 +340,185 @@ def skeleton(args: Dict[str, str]):
         # Write command information to configuration file and python file
         write_file(s + '[[commands]]' + s, target_toml_file, 'a')
         write_toml_file(commands_config, target_toml_file, 'a')
-        write_file(s + "    _parser_" + prsr_info['command'] + " = globals()[PS].add_parser('" + prsr_info['command'] + "', help='" + prsr_help['help'] + "')", target_py_file, 'a')
+        write_file(s + "    _parser_" + prsr_info['command']
+                   + " = globals()[PS].add_parser('" + prsr_info['command']
+                   + "', help='" + prsr_help['help'] + "')",
+                   target_py_file, 'a')
 
         # Start to get arguments for command
         complete_args_info = []
 
         # Get arguments
-        arg_title = BOLD + "First argument for the " + prsr_info["command"] + ' command :' + RESET + s
+        arg_title = BOLD + "First argument for the " \
+            + prsr_info["command"] + ' command :' + RESET + s
         more_args = {'another': True}
         while more_args['another']:
             clear()
             print(arg_title)
-            arg_title = BOLD + "Next argument for the " + prsr_info["command"] + ' command :' + RESET + s
+            arg_title = BOLD + "Next argument for the " \
+                + prsr_info["command"] + ' command :' + RESET + s
             this_arg_info = []
-            arg_questions = [
-                            {'type': 'text', 'name': 'argument', 'message': 'Option name(s): ', 'qmark': '-', },
-                            {'type': 'select', 'name': 'action', 'message': 'Action to be taken: ', 'qmark': '-',
-                             'choices': ['store', 'store_const', 'store_true', 'store_false', 'append', 'append_const',
-                                    'count', 'help', 'version', 'extend', 'Custom Action'], },
-                            {'type': 'text', 'name': 'const', 'message': 'Constant to be stored: ', 'qmark': '   -',
-                                "when": lambda x: x["action"] in ["store_const", "append_const"]},
-                            {'type': 'text', 'name': 'customaction', 'message': 'Custom Action name: ', 'qmark': '   -',
-                                "when": lambda x: x["action"] == "Custom Action", },
-                            {'type': 'select', 'name': 'nargs', 'message': 'Number of arguments: ', 'qmark': '-',
-                                'choices': ['?', '*', '+', '1', '2', '3', '4', '5', '6', '7', '8', '9', '>9'], },
-                            {'type': 'text', 'name': 'default', 'message': 'Default value: ', 'qmark': '-', },
-                            {'type': 'select', 'name': 'type', 'message': 'Type: ', 'qmark': '-',
-                                'choices': ['str', 'int', 'float', 'ascii', 'ord', 'open', 'User Defined'], },
-                            {'type': 'text', 'name': 'userdefinedtype', 'message': 'User Defined type: ', 'qmark': '   -',
-                                "when": lambda x: x["type"] == "User Defined", },
-                            {'type': 'text', 'name': 'choices', 'message': 'List of choices: ', 'qmark': '-', },
-                            {'type': 'select', 'name': 'required', 'message': 'Required: ', 'qmark': '-',
-                                'choices': ['Yes', 'No'], },
-                            {'type': 'select', 'name': 'arghelp', 'message': 'Help ? ', 'qmark': '-',
-                                'choices': ['Yes', 'No'], },
-                            {'type': 'text', 'name': 'helpmessage', 'message': 'Help Message: ', 'qmark': '   -',
-                                "when": lambda x: x["arghelp"] == "Yes", },
-                            {'type': 'text', 'name': 'metavar', 'message': 'Metavar? ', 'qmark': '-', },
-                            {'type': 'text', 'name': 'dest', 'message': 'Dest? ', 'qmark': '-', }, ]
-            this_arg_info = prompt(arg_questions)
-            write_file(s + "    _parser_" + prsr_info['command'] + ".add_argument(", target_py_file, 'a')
-            write_file(s + "        " + this_arg_info['argument'] + ',', target_py_file, 'a')
+            argq = [
+                    {'type': 'text', 'name': 'argument',
+                     'message': 'Option name(s): ', 'qmark': '-', },
+                    {'type': 'select', 'name': 'action',
+                     'message': 'Action to be taken: ', 'qmark': '-',
+                     'choices': ['store', 'store_const', 'store_true',
+                                 'store_false', 'append', 'append_const',
+                                 'count', 'help', 'version',
+                                 'extend', 'Custom Action'], },
+                    {'type': 'text', 'name': 'const',
+                     'message': 'Constant to be stored: ', 'qmark': '   -',
+                     'when': lambda x: x["action"] in
+                     ["store_const", "append_const"]},
+                    {'type': 'text', 'name': 'customaction',
+                     'message': 'Custom Action name: ',
+                     'qmark': '   -',
+                     'when': lambda x: x["action"] == "Custom Action", },
+                    {'type': 'select', 'name': 'nargs',
+                     'message': 'Number of arguments: ', 'qmark': '-',
+                     'choices': ['?', '*', '+', '1', '2', '3', '4',
+                                 '5', '6', '7', '8', '9', '>9'], },
+                    {'type': 'text', 'name': 'default',
+                     'message': 'Default value: ', 'qmark': '-', },
+                    {'type': 'select', 'name': 'type',
+                     'message': 'Type: ', 'qmark': '-',
+                     'choices': ['str', 'int', 'float', 'ascii', 'ord',
+                                 'open', 'User Defined'], },
+                    {'type': 'text', 'name': 'userdefinedtype',
+                     'message': 'User Defined type: ', 'qmark': '   -',
+                     'when': lambda x: x["type"] == "User Defined", },
+                    {'type': 'text', 'name': 'choices',
+                     'message': 'List of choices: ', 'qmark': '-', },
+                    {'type': 'select', 'name': 'required',
+                     'message': 'Required: ', 'qmark': '-',
+                     'choices': ['Yes', 'No'], },
+                    {'type': 'select', 'name': 'arghelp',
+                     'message': 'Help ? ', 'qmark': '-',
+                     'choices': ['Yes', 'No'], },
+                    {'type': 'text', 'name': 'helpmessage',
+                     'message': 'Help Message: ', 'qmark': '   -',
+                     'when': lambda x: x["arghelp"] == "Yes", },
+                    {'type': 'text', 'name': 'metavar',
+                     'message': 'Metavar? ', 'qmark': '-', },
+                    {'type': 'text', 'name': 'dest',
+                     'message': 'Dest? ', 'qmark': '-', },
+                    ]
+            this_arg_info = prompt(argq)
+            write_file(s + "    _parser_" +
+                       prsr_info['command'] + ".add_argument(",
+                       target_py_file, 'a')
+            write_file(s + "        " + this_arg_info['argument'] + ',',
+                       target_py_file, 'a')
 
             # Required
             if (this_arg_info['required'] == 'Yes'):
-                write_file(s + "        " + "required=True,", target_py_file, 'a')
+                write_file(s + "        " + "required=True,",
+                           target_py_file, 'a')
             else:
-                write_file(s + "        " + "required=False,", target_py_file, 'a')
+                write_file(s + "        " + "required=False,",
+                           target_py_file, 'a')
 
             # Action
             action = this_arg_info['action']
 
             if (action != 'Custom Action'):
-                write_file(s + "        action='" + action + "',", target_py_file, 'a')
+                write_file(s + "        action='" +
+                           action + "',",
+                           target_py_file, 'a')
 
             if (action in ['store_const', 'append_const']):
-                write_file(s + "        const='" + this_arg_info['const'] + "',", target_py_file, 'a')
+                write_file(s + "        const='" +
+                           this_arg_info['const'] + "',",
+                           target_py_file, 'a')
 
             if (action == 'version'):
-                write_file(s + "        version='" + config['version'] + "',", target_py_file, 'a')
+                write_file(s + "        version='" +
+                           config['version'] + "',",
+                           target_py_file, 'a')
 
             if (action == 'Custom Action'):
                 # Write/append custom action classes
-                write_file(s + "        action=" + this_arg_info['customaction'] + ",", target_py_file, 'a')
-                write_file('class ' + this_arg_info['customaction'] + '(argparse.Action):', target_custom_actions_file, 'a')
-                write_file(s + '    """Custom class for ' + this_arg_info['customaction'] + '"""', target_custom_actions_file, 'a')
-                write_file(s + '    def __call__(self, parser, namespace, values, option_string=None):', target_custom_actions_file, 'a')
-                write_file(s + '    # Write your custom class code here' + s, target_custom_actions_file, 'a')
-                write_file('        pass' + s + s, target_custom_actions_file, 'a')
+                write_file(s + "        action=" +
+                           this_arg_info['customaction'] + ",",
+                           target_py_file, 'a')
+                write_file('class ' + this_arg_info['customaction'] +
+                           '(argparse.Action):',
+                           target_custom_actions_file, 'a')
+                write_file(s + '    """Custom class for ' +
+                           this_arg_info['customaction'] + '"""',
+                           target_custom_actions_file, 'a')
+                write_file(s + '    def __call__(self, parser, namespace, ' +
+                           'values, option_string=None):',
+                           target_custom_actions_file, 'a')
+                write_file(s + '    # Write your custom class code here' + s,
+                           target_custom_actions_file, 'a')
+                write_file('        pass' + s + s,
+                           target_custom_actions_file, 'a')
 
             # Help
             if (this_arg_info['arghelp'] == 'Yes'):
-                write_file(s + "        " + "help='" + this_arg_info['helpmessage'] + "',", target_py_file, 'a')
+                write_file(s + "        " + "help='" +
+                           this_arg_info['helpmessage'] + "',",
+                           target_py_file, 'a')
 
             # nargs
             if (this_arg_info['nargs'] == '>9'):
-                write_file(s + "        " + "nargs='XXXXXXXXXX',  # Ensure that the correct number of args is inserted here", target_py_file, 'a')
+                write_file(s + "        " +
+                           "nargs='XXXXXXXXXX',  # Ensure that the " +
+                           "correct number of args is inserted here",
+                           target_py_file, 'a')
             else:
                 if (this_arg_info['nargs'] != ''):
-                    write_file(s + "        " + "nargs='" + this_arg_info['nargs'] + "',", target_py_file, 'a')
+                    write_file(s + "        " + "nargs='" +
+                               this_arg_info['nargs'] + "',",
+                               target_py_file, 'a')
 
             # Default value
             if (this_arg_info['default'] != ''):
-                write_file(s + "        " + "default='" + this_arg_info['default'] + "',", target_py_file, 'a')
+                write_file(s + "        " + "default='" +
+                           this_arg_info['default'] + "',",
+                           target_py_file, 'a')
 
             # Type
             if (this_arg_info['type'] != 'User Defined'):
                 if (this_arg_info['type'] != ''):
-                    write_file(s + "        " + "type='" + this_arg_info['type'] + "',", target_py_file, 'a')
+                    write_file(s + "        " + "type='" +
+                               this_arg_info['type'] + "',",
+                               target_py_file, 'a')
             else:
-                write_file(s + "        " + "type='" + this_arg_info['userdefinedtype'] + "',", target_py_file, 'a')
-                write_file("def " + this_arg_info['userdefinedtype'] + "(value):" + s, target_udt_file, 'a')
-                write_file("    # Definition for user-defined type for parser" + s, target_udt_file, 'a')
-                write_file("    # Insert your code here" + s, target_udt_file, 'a')
+                write_file(s + "        " + "type='" +
+                           this_arg_info['userdefinedtype'] + "',",
+                           target_py_file, 'a')
+                write_file("def " + this_arg_info['userdefinedtype'] +
+                           "(value):" + s, target_udt_file, 'a')
+                write_file("    # Definition for user-defined type " +
+                           "for parser" + s, target_udt_file, 'a')
+                write_file("    # Insert your code here" + s,
+                           target_udt_file, 'a')
 
                 write_file("    Return None" + s + s, target_udt_file, 'a')
 
             # Choices
             if (this_arg_info['choices'] != ''):
-                write_file(s + "        " + "choices='" + this_arg_info['choices'] + "',", target_py_file, 'a')
+                write_file(s + "        " + "choices='" +
+                           this_arg_info['choices'] + "',",
+                           target_py_file, 'a')
 
             # Metavar
             if (this_arg_info['metavar'] != ''):
-                write_file(s + "        " + "metavar='" + this_arg_info['metavar'] + "',", target_py_file, 'a')
+                write_file(s + "        " + "metavar='" +
+                           this_arg_info['metavar'] + "',",
+                           target_py_file, 'a')
 
             # Dest
             if (this_arg_info['dest'] != ''):
-                write_file(s + "        " + "dest='" + this_arg_info['dest'] + "',", target_py_file, 'a')
+                write_file(s +
+                           "        " +
+                           "dest='" +
+                           this_arg_info['dest'] +
+                           "',",
+                           target_py_file, 'a')
 
             write_file(s + "        )" + s, target_py_file, 'a')
 
@@ -439,14 +531,20 @@ def skeleton(args: Dict[str, str]):
 
         more_commands = prompt(another_command)
 
-    append_file(str(Path(base_dir, 'parts', 'plugin_main.part2')), target_py_file)
+    append_file(str(Path(base_dir,
+                         'parts',
+                         'plugin_main.part2')),
+                target_py_file)
 
     inject_actions_classes(s, target_toml_file,
                            target_py_file,
                            target_custom_actions_file,
                            target_udt_file)
 
-    append_file(str(Path(base_dir, 'parts', 'plugin_main.part3')), target_py_file)
+    append_file(str(Path(base_dir,
+                         'parts',
+                         'plugin_main.part3')),
+                target_py_file)
 
     return None
 
@@ -490,7 +588,7 @@ def parse_args(args: Sequence[str]) -> argparse.Namespace:
     parser.add_argument(
         "--version",
         action="version",
-        version="%(prog)s {}".format(read_toml_file(__file__)['info']['version']))
+        version="%(prog)s {}".format(read_toml_file(__file__)['info']['version']))  # noqa: E501
 
     # Main Commands
 
@@ -541,7 +639,7 @@ def parse_args(args: Sequence[str]) -> argparse.Namespace:
             except KeyError:
                 print(f'Unknown command name `{parsed_args.cmd}`')
                 print(
-                    f"Valid commands are: {', '.join(subparsers.choices.keys())}"
+                    f"Valid commands are: {', '.join(subparsers.choices.keys())}"  # noqa: E501
                 )
         sys.exit(1)
     return parsed_args
