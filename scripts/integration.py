@@ -35,22 +35,23 @@ def inject_connect_code(p: str):
     now = getnow()
 
     # Set up the "line" to inject into the plugin_main.py file
-    # Ignore line lengthd
-    line = "    # KB-PLUGIN-CONN                                              #  (KPC)" + s         # noqa: E501
-    line = line + "    # Start of kb-plugin connection code                          #  (KPC)" + s  # noqa: E501
-    line = line + "    # Connected at : " + now + "                   #  (KPC)" + s                 # noqa: E501
-    line = line + "    # DO NOT MODIFY THIS CONNECTION CODE                          #  (KPC)" + s  # noqa: E501
-    line = line + "    try:                                                          #  (KPC)" + s  # noqa: E501
-    line = line + "        from kb.plugin import loadModules                         #  (KPC)" + s  # noqa: E501
-    line = line + "        loadModules('commands','','',COMMANDS,DEFAULT_CONFIG,cmd) #  (KPC)" + s  # noqa: E501
-    line = line + "    except ModuleNotFoundError:                                   #  (KPC)" + s  # noqa: E501
-    line = line + "        pass                                                      #  (KPC)" + s  # noqa: E501
-    line = line + "    # End of kb-plugin connection code                            #  (KPC)" + s  # noqa: E501
-    line = line + "    # KB-PLUGIN-CONN                                              #  (KPC)" + s  # noqa: E501
+    # Ignore line length
+    q = "    # KB-PLUGIN-CONN                             #  (KPC)" + s
+    q = q + "    # Start of kb-plugin connection code         #  (KPC)" + s
+    q = q + "    # Connected at : " + now + "            #  (KPC)" + s
+    q = q + "    # DO NOT MODIFY THIS CONNECTION CODE         #  (KPC)" + s
+    q = q + "    try:                                         #  (KPC)" + s
+    q = q + "        from kb.plugin import loadModules        #  (KPC)" + s
+    q = q + "        loadModules('commands','','',            #  (KPC)" + s
+    q = q + "                    COMMANDS,DEFAULT_CONFIG,cmd) #  (KPC)" + s
+    q = q + "    except ModuleNotFoundError:                  #  (KPC)" + s
+    q = q + "        pass                                     #  (KPC)" + s
+    q = q + "    # End of kb-plugin connection code           #  (KPC)" + s
+    q = q + "    # KB-PLUGIN-CONN                             #  (KPC)" + s
     # There is a comment at the end of each line to aid removal
 
     # Inject hook code
-    add_line_to_file(p, line, inserter=AfterFirst(r"cmd_params = vars"),
+    add_line_to_file(p, q, inserter=AfterFirst(r"cmd_params = vars"),
                      backup=ALWAYS, backup_ext=".original",)
 
     return True
