@@ -106,12 +106,13 @@ def append_file(file1: str, file2: str):
     return None
 
 
-def create_structure(base_dir: str, plugin_name: str):
+def create_structure(base_dir: str, plugins_dir: str, plugin_name: str):
     """
     Create a directory structure to hold the plugin code
 
     Arguments:
     base_dir    -   the path for the directory structure
+    plugin_dir  -   the name of the directory in which the plugins reside
     plugin_name -   name of the plugin to use as the root
                     of the directory structure
 
@@ -122,7 +123,7 @@ def create_structure(base_dir: str, plugin_name: str):
     from kb.filesystem import create_directory, touch_file
 
     # Create specific plugin named directories
-    plugin_dir = Path(base_dir, 'plugins', plugin_name)
+    plugin_dir = Path(base_dir, plugins_dir, plugin_name)
     create_directory(Path(plugin_dir, 'actions'))
     create_directory(Path(plugin_dir, 'api'))
     create_directory(Path(plugin_dir, 'commands'))

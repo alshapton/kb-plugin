@@ -194,11 +194,16 @@ def skeleton(args: Dict[str, str]):
     # Get OS-dependent line separator
     s = os.linesep
 
+    # Get current date/time
+    now = getnow()
+
     plugin_name = 'coffee'
     copyright = 'Andrew Shapton'
 
+    plugins_dir='plugins'
+
     base_dir = Path(os.path.dirname(__file__))
-    target_py_file = str(Path(base_dir, 'plugins', plugin_name,
+    target_py_file = str(Path(base_dir, plugins_dir, plugin_name,
                          'plugin_main_tmp.py'))
     target_toml_file = str(Path(base_dir, 'config.tmp.toml'))
     target_custom_actions_file = str(Path(base_dir, 'custom_classes.py'))
@@ -206,9 +211,7 @@ def skeleton(args: Dict[str, str]):
 
     write_file('', target_custom_actions_file, 'w')
 
-    now = getnow()
-
-    create_structure(base_dir, plugin_name)
+    create_structure(base_dir, plugins_dir, plugin_name)
     title = construct_title(s)
     title = title + '#' + s
     title = title + '# Main file for ' + plugin_name + ' plugin.' + s
@@ -259,8 +262,6 @@ def skeleton(args: Dict[str, str]):
 
     config = prompt(questions)
     write_file('', target_toml_file, 'w')
-
-    now = getnow()
 
     title = construct_title(s)
     title = title + '#' + s

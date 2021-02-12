@@ -25,6 +25,7 @@ Version: 0.0.1
 * [Purpose of kb-plugin](#Purpose-of-kb-plugin)
 * [Installation](#installation)
     * [Prerequisites](#Prerequisites)
+    * [Connecting to kb](#Connecting-to-kb)
 * [Upgrade](#upgrade)
 * [Donations](#donations)
 * [Upgrade](#upgrade)
@@ -82,6 +83,19 @@ python setup.py install
 # or with pip
 pip install -U git+https://github.com/gnebbia/kb
 ```
+
+**Connecting to kb:**
+
+Once you have downloaded/installed kb-plugin, confirm that the installation has worked as follows:
+![](./images/term-1.gif)
+
+You should see the current version of kb, kb-plugin and the connection status (which at this stage should show as **`Disconnected`**)
+
+Now, connect your kb-plugin instance to your installation of kb as shown below (check your connectivity status before and after)
+
+![](./images/term-2.gif)
+
+Should you attempt to connect kb-plugin to kb when it is already connected, you will receive this message: **`kb-plugin is already connected to the kb instance`**
 
 ### List plugins
 
